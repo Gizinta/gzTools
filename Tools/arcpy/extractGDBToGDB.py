@@ -3,7 +3,7 @@
 # Created on: 2013-02-03 SG
 # Description: Import a set of GDB Datasets to Geodatabase. 
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
+# Copyright 2012-2013 Vertex3 Inc and the Regional Municipality of Waterloo
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 import os, sys, traceback, time, datetime as dt, arcpy,  xml.dom.minidom, gzSupport
