@@ -1,0 +1,77 @@
+
+<Gizinta xmlns:gizinta="http://gizinta.com" errorTableName="gzError" logTableName="gzLog">
+	<Extract>
+		<GDBDataset sourceIDField="OBJECTID" sourceName="FacilitySite" targetName="FacilitySite"/>
+	</Extract>
+	<Transform>
+		<Dataset name="FacilitySite" qa="CheckFields,CheckGeometry" sourceIDField="" sourceNameField="">
+			<Field>
+				<SourceName qa="Required">FacilityIdentifier</SourceName>
+				<TargetName qa="Required">FACILITYID</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>50</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Required">NameofFacility</SourceName>
+				<TargetName qa="Required">NAME</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>255</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">FacilityType</SourceName>
+				<TargetName qa="Required">SUBTYPEFIELD</TargetName>
+		        <Method>ValueMap</Method>
+		        <ValueMapName>FacilitySiteType</ValueMapName>
+				<ValueMapOtherwise>790</ValueMapOtherwise>
+				<FieldType>Integer</FieldType>
+				<FieldLength>4</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">FCODE</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>100</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">Description</SourceName>
+				<TargetName qa="Optional">DESCRIPT</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>254</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">OWNTYPE</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>50</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">LastUpdate</SourceName>
+				<TargetName qa="Required">LASTUPDATE</TargetName>
+				<Method>PythonCalculate</Method>
+        		<PythonExpression>gzSupport.getDBTime()</PythonExpression>
+				<FieldType>Date</FieldType>
+				<FieldLength>8</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">LastEditor</SourceName>
+				<TargetName qa="Required">LASTEDITOR</TargetName>
+				<Method>PythonCalculate</Method>
+        		<PythonExpression>myGizinta.defaultUserName()</PythonExpression>
+				<FieldType>String</FieldType>
+				<FieldLength>50</FieldLength>
+			</Field>
+			<SourceFieldNames>Description,FacilityIdentifier,FacilityType,LastEditor,LastUpdate,NameofFacility,OwnerType</SourceFieldNames>
+		</Dataset>
+		<ValueMaps>
+			<ValueMap name="FacilitySiteType">
+				<SourceValues>Agriculture, Food, and Livestock|Industry|Commercial and Retail|Education|Emergency Response and Law Enforcement|Energy|Banking and Finance|Mail and Shipping|Building General|Health and Medical|Transporation Facilities|Public Attractions and Landmark Buildings|Government and Military|Weather|Water Supply and Treatment|Information and Communication</SourceValues>
+				<TargetValues>701|710|720|730|740|750|760|780|790|800|810|820|830|840|850|880</TargetValues>
+			</ValueMap>
+		</ValueMaps>
+	</Transform>
+</Gizinta>

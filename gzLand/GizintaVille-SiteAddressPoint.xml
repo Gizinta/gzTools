@@ -1,0 +1,181 @@
+
+<Gizinta xmlns:gizinta="http://gizinta.com" errorTableName="gzError" logTableName="gzLog">
+	<Extract>
+		<GDBDataset sourceIDField="SiteAddressID" sourceName="AddressPoint" targetName="SiteAddressPoint"/>
+	</Extract>
+	<Transform>
+		<Dataset name="SiteAddressPoint" qa="CheckFields,CheckGeometry" sourceIDField="SiteAddressID" sourceNameField="FullAddress">
+			<Field>
+				<SourceName qa="Optional">SiteAddressID</SourceName>
+				<TargetName qa="Optional">SITEADDID</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>20</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">AddressPointID</SourceName>
+				<TargetName qa="Optional">ADDPTKEY</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>20</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">AddressNumberPrefix</SourceName>
+				<TargetName qa="Optional">PREADDRNUM</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>5</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">AddressNumberSuffix</SourceName>
+				<TargetName qa="Optional">ADDRNUMSUF</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>5</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Required">FullAddressNumber</SourceName>
+				<TargetName qa="Required">ADDRNUM</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>20</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">AddressRange</SourceName>
+				<TargetName qa="Optional">ADDRRANGE</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>50</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">AddressUnitType</SourceName>
+				<TargetName qa="Optional">UNITTYPE</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>10</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">AddressUnitNumber</SourceName>
+				<TargetName qa="Optional">UNITID</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>10</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">ALTUNITTYPE</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>10</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">ALTUNITID</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>10</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Required">FullRoadName</SourceName>
+				<TargetName qa="Required">FULLNAME</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>125</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Required,Unique">FullAddress</SourceName>
+				<TargetName qa="Required,Unique">FULLADDR</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>250</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Required">PlaceName</SourceName>
+				<TargetName qa="Required">PLACENAME</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>250</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Required">MunicipalityName</SourceName>
+				<TargetName qa="Required">MUNICIPALITY</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>100</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">ESN</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>5</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">PSAP</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>4</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">MSAG</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>35</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">USNGCOORD</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>50</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">ADDRCLASS</TargetName>
+				<Method>None</Method>
+				<FieldType>Integer</FieldType>
+				<FieldLength>4</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">POINTTYPE</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>30</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">CaptureMethod</SourceName>
+				<TargetName qa="Optional">CAPTUREMETH</TargetName>
+				<Method>Copy</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>30</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional"/>
+				<TargetName qa="Optional">STATUS</TargetName>
+				<Method>None</Method>
+				<FieldType>String</FieldType>
+				<FieldLength>30</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">LASTUPDATE</SourceName>
+				<TargetName qa="Required">LASTUPDATE</TargetName>
+				<Method>PythonCalculate</Method>
+				<PythonExpression>gzSupport.getDBTime()</PythonExpression>
+				<FieldType>Date</FieldType>
+				<FieldLength>8</FieldLength>
+			</Field>
+			<Field>
+				<SourceName qa="Optional">LASTEDITOR</SourceName>
+				<TargetName qa="Required">LASTEDITOR</TargetName>
+				<Method>PythonCalculate</Method>
+				<PythonExpression>myGizinta.defaultUserName()</PythonExpression>
+				<FieldType>String</FieldType>
+				<FieldLength>50</FieldLength>
+			</Field>
+			<SourceFieldNames>AddressNumberPrefix,AddressNumberSuffix,AddressPointID,AddressRange,AddressUnitNumber,AddressUnitType,CaptureMethod,FullAddress,FullAddressNumber,FullRoadName,LastEditor,LastUpdateDate,Location,MunicipalityName,PlaceName,SiteAddressID,Status</SourceFieldNames>
+		</Dataset>
+	</Transform>
+</Gizinta>

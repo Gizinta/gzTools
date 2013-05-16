@@ -1,0 +1,52 @@
+<Gizinta xmlns:gizinta="http://gizinta.com" errorTableName="gzError" logTableName="gzLog">
+  <Extract>
+    <CADDataset sourceIDField="FID" sourceName="Exterior" targetName="BuildingFloor">
+      <WhereClause></WhereClause>
+    </CADDataset>
+  </Extract>
+  <Transform>
+    <Dataset name="BuildingFloor" qa="CheckFields,CheckGeometry" sourceIDField="FID" sourceNameField="FID">
+      <Field>
+        <SourceName qa="Optional">TYPE</SourceName>
+        <TargetName qa="Required">BUILDING</TargetName>
+        <Method>DefaultValue</Method>
+        <DefaultValue>BLDG01</DefaultValue>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"></SourceName>
+        <TargetName qa="Required">FLOOR</TargetName>
+        <Method>DefaultValue</Method>
+        <DefaultValue>01</DefaultValue>
+        <FieldType>String</FieldType>
+        <FieldLength>5</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"></SourceName>
+        <TargetName qa="Required">FLOORKEY</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>"|BUILDING|" + "-" + "|FLOOR|"</PythonExpression> 
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">LASTUPDATE</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>gzSupport.getDBTime()</PythonExpression>
+        <FieldType>Date</FieldType>
+        <FieldLength>8</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">LASTEDITOR</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>myGizinta.defaultUserName()</PythonExpression>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <SourceFieldNames>AREA,Color,Elevation,Entity,FLOOR_NUMBER,Handle,Layer,LineWt,Linetype,ROOM_NUMBER,RefName,TYPE</SourceFieldNames>
+    </Dataset>
+  </Transform>
+</Gizinta>

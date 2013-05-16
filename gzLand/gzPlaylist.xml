@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<GizintaPlaylist errorTableName="gzError" logTableName="gzLog" fileExtension=".dwg" xmlns:gizinta="http://gizinta.com">
+	<File>GizintaVille-BuildingFloor.xml</File>
+	<File>GizintaVille-BuildingFloorplanLine.xml</File>
+	<File>GizintaVille-BuildingInteriorSpace.xml</File>
+	<File>GizintaVille-FacilitySite.xml</File>
+	<File>GizintaVille-GravityMain.xml</File>
+	<File>GizintaVille-MunicipalBoundary.xml</File>
+	<File>GizintaVille-RoadCenterline.xml</File>
+	<File>GizintaVille-SiteAddressPoint.xml</File>
+	<File>GizintaVille-ssManhole.xml</File>
+	<File>GizintaVille-ssNetworkStructure.xml</File>
+	<File>GizintaVille-TaxParcelLayer.xml</File>
+	<File>GizintaVille-wHydrant.xml</File>
+	<File>GizintaVille-wMain.xml</File>
+	<File>GizintaVille-wNetworkStructure.xml</File>
+	<File>GizintaVille-wSystemValve.xml</File>
+</GizintaPlaylist>

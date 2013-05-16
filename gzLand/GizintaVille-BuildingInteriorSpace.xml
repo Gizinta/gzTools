@@ -1,0 +1,151 @@
+<Gizinta xmlns:gizinta="http://gizinta.com" errorTableName="gzError" logTableName="gzLog">
+  <Extract>
+    <CADDataset sourceIDField="FID" sourceName="FloorPlan" targetName="BuildingInteriorSpace">
+      <WhereClause>"Layer" in ('Interior Room','Restroom','Misc','Hallway')</WhereClause>
+    </CADDataset>
+  </Extract>
+  <Transform>
+    <Dataset name="BuildingInteriorSpace" qa="CheckFields,CheckGeometry" sourceIDField="FID" sourceNameField="FID">
+      <Field>
+        <SourceName qa="Optional">ROOM_NUMBER</SourceName>
+        <TargetName qa="Required">BUILDING</TargetName>
+        <Method>DefaultValue</Method>
+        <DefaultValue>BLDG01</DefaultValue>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional">ROOM_NUMBER</SourceName>
+        <TargetName qa="Required,Unique">SPACEID</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>"|BUILDING|" + "-" + "|FLOOR_NUMBER|" + "-" + "|ROOM_NUMBER|"</PythonExpression> 
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional">FLOOR_NUMBER</SourceName>
+        <TargetName qa="Required">FLOORKEY</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>"|BUILDING|" + "-" + "|FLOOR_NUMBER|"</PythonExpression> 
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">SECTIONKEY</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>25</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional">FLOOR_NUMBER</SourceName>
+        <TargetName qa="Required">FLOOR</TargetName>
+        <Method>Copy</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>5</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">SHORTNAME</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>25</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">LONGNAME</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>100</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">DESCRIP</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>255</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional">Layer</SourceName>
+        <TargetName qa="Required">SPACETYPE</TargetName>
+        <Method>Copy</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">ACCESSTYPE</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">CEILINGHEIGHT</TargetName>
+        <Method>None</Method>
+        <FieldType>Double</FieldType>
+        <FieldLength>8</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">BASEELEV</TargetName>
+        <Method>None</Method>
+        <FieldType>Double</FieldType>
+        <FieldLength>8</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional">AREA</SourceName>
+        <TargetName qa="Optional">FLOORAREA</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>int("|AREA|"[:"|AREA|".find(" ")]) if "|AREA|".find(" ") > -1 else None</PythonExpression> 
+        <FieldType>Double</FieldType>
+        <FieldLength>8</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">CAPACITY</TargetName>
+        <Method>None</Method>
+        <FieldType>Integer</FieldType>
+        <FieldLength>4</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">SPACEFORM</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">SPACEFUNC</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">SPACEUSE</TargetName>
+        <Method>None</Method>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">LASTUPDATE</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>gzSupport.getDBTime()</PythonExpression>
+        <FieldType>Date</FieldType>
+        <FieldLength>8</FieldLength>
+      </Field>
+      <Field>
+        <SourceName qa="Optional"/>
+        <TargetName qa="Optional">LASTEDITOR</TargetName>
+        <Method>PythonCalculate</Method>
+        <PythonExpression>myGizinta.defaultUserName()</PythonExpression>
+        <FieldType>String</FieldType>
+        <FieldLength>50</FieldLength>
+      </Field>
+      <SourceFieldNames>AREA,Color,Elevation,Entity,FLOOR_NUMBER,Handle,Layer,LineWt,Linetype,ROOM_NUMBER,RefName,TYPE</SourceFieldNames>
+    </Dataset>
+  </Transform>
+</Gizinta>
