@@ -34,7 +34,6 @@ def main(argv = None):
         if len(datasets) > 0:
             progBar = len(datasets) + 1
             arcpy.SetProgressor("step", "Importing Layers...", 0,progBar, 1) 
-            deleteExistingRows(datasets)
             arcpy.SetProgressorPosition()
         for dataset in datasets:
             gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
@@ -103,11 +102,6 @@ def exportDataset(sourceLayer,targetName,dataset):
         gzSupport.logProcessError(sourceLayer,gzSupport.sourceIDField,sourceLayer,targetName,err)
         result = False
     return result
-
-def deleteExistingRows(datasets):
-    # gzSupport.deleteLogTableRows("Delete") # don't delete
-    # gzSupport.deleteErrorTableRows("Delete")
-
 
 if __name__ == "__main__":
     main()
