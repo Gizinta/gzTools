@@ -45,6 +45,8 @@ def getLogFileName(sysargv):
     fName = ""
     try:
         fName = sysargv[:sysargv.rfind(".py")] + ".log" # make it a .log file
+        if not os.path.exists("../log"):
+            os.mkdir("../log")
         fName = fName.replace(os.sep+"arcpy"+os.sep,os.sep+"log"+os.sep) # put it in ../log folder.
     except:
         addError("Could not get log file name from " + sysargv)
