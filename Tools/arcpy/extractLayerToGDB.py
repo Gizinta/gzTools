@@ -105,8 +105,8 @@ def exportDataset(sourceLayer,targetName,dataset):
     return result
 
 def deleteExistingRows(datasets):
-    gzSupport.deleteLogTableRows("Delete")
-    gzSupport.deleteErrorTableRows("Delete")
+    # gzSupport.deleteLogTableRows("Delete") # don't delete
+    # gzSupport.deleteErrorTableRows("Delete")
 
 
 if __name__ == "__main__":

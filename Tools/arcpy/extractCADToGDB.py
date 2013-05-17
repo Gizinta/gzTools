@@ -210,8 +210,8 @@ def deleteExistingRows(datasets):
         if arcpy.Exists(table):
             arcpy.DeleteRows_management(table)
             gzSupport.addMessage("Rows deleted from: " + name)
-    gzSupport.deleteLogTableRows("Delete")
-    gzSupport.deleteErrorTableRows("Delete")
+    #gzSupport.deleteLogTableRows("Delete") # don't delete
+    #gzSupport.deleteErrorTableRows("Delete")
 
 def getFileList(inputFolder,fileExt,minTime): # get a list of files - recursively
     inputFiles = []

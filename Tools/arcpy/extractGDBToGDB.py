@@ -93,8 +93,8 @@ def deleteExistingRows(datasets):
         else:
             gzSupport.addMessage(table + " does not exist")
             
-    gzSupport.deleteLogTableRows("Delete")
-    gzSupport.deleteErrorTableRows("Delete")
+    #gzSupport.deleteLogTableRows("Delete") # don't delete
+    #gzSupport.deleteErrorTableRows("Delete")
 
 
 if __name__ == "__main__":
