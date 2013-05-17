@@ -19,8 +19,6 @@ gzSupport.startLog()
 
 def main(argv = None):
     global wildcard
-    startTime = gzSupport.getDBTime()
-    gzSupport.addMessage(startTime)
     success = False
     if wildcard == "" or wildcard == "#":
         wildcard = ""
