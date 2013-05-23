@@ -195,6 +195,34 @@ def makeTableView(workspace,sourceTable,viewName,whereClause):
         exit(-1)
     return(viewName)
 
+def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause):
+    # Process: Make Feature Layer from a .lyr file - drop prefixes
+    if arcpy.Exists(sourceLayer):
+        if arcpy.Exists(viewName):
+            arcpy.Delete_management(viewName) # delete view if it exists
+        fLayerStr = ""
+        tableList = []
+        desc = arcpy.Describe(sourceLayer)
+        for field in desc.Fields: # drop any field prefix from the source layer (happens with map joins)
+            tableName = field.name[:field.name.rfind(".")]
+            try:
+                tableList.index(tableName)
+            except:
+                tableList.append(tableName)
+                
+            thisFieldName = field.name[field.name.rfind(".")+1:]
+            thisFieldStr = field.name + " " + thisFieldName + " VISIBLE NONE;" 
+            addMessage(thisFieldName)
+            fLayerStr += thisFieldStr
+        arcpy.MakeFeatureLayer_management(sourceLayer, viewName, whereClause, workspace,fLayerStr)
+    else:
+        addError(sourceFC + " does not exist, exiting")
+        
+    if not arcpy.Exists(viewName):
+        exit(-1)
+    return(viewName)
+
+
     
 def deleteRows(workspace,fClassName,expr):
     # delete rows in feature class

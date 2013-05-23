@@ -86,15 +86,13 @@ def exportDataset(sourceLayer,targetName,dataset):
             whereClause = gzSupport.getNodeValue(dataset,"WhereClause")
         except:
             whereClause = ''
-        if whereClause != '':
-            gzSupport.addMessage("Where " + whereClause)
-            viewName = sourceName + "_View"
-            view = gzSupport.makeFeatureView(gzSupport.workspace,sourceLayer,viewName, whereClause)
-            count = arcpy.GetCount_management(view).getOutput(0)
-            gzSupport.addMessage(str(count) + " source rows")
-            arcpy.FeatureClassToFeatureClass_conversion(view,gzSupport.workspace,targetName)
-        else:
-            arcpy.FeatureClassToFeatureClass_conversion(sourceLayer,gzSupport.workspace,targetName)
+        gzSupport.addMessage("Where '" + whereClause + "'")
+        sourceName = sourceLayer[sourceLayer.rfind(os.sep)+1:sourceLayer.lower().rfind(".lyr")]
+        viewName = sourceName + "_View"
+        view = gzSupport.makeFeatureViewForLayer(gzSupport.workspace,sourceLayer,viewName,whereClause)
+        count = arcpy.GetCount_management(view).getOutput(0)
+        gzSupport.addMessage(str(count) + " source rows")
+        arcpy.FeatureClassToFeatureClass_conversion(view,gzSupport.workspace,targetName)
     except:
         err = "Failed to create new dataset " + targetName
         gzSupport.showTraceback()

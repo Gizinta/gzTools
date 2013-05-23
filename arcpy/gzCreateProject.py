@@ -68,23 +68,24 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
     
     fields = getFields(descT,targetDataset)
     sourceFields = getFields(desc,sourceDataset)
-    sourceNames = [field.name for field in sourceFields]
+    sourceNames = [field.name[field.name.rfind(".")+1:] for field in sourceFields]
     i=0
     try:
         for field in fields:
             fNode = xmlDoc.createElement("Field")
             dataset.appendChild(fNode)
-            if field.name in sourceNames:
-                addFieldElement(xmlDoc,fNode,"SourceName",field.name)
+			fieldName = field.name[field.name.rfind(".")+1:]
+            if fieldName in sourceNames:
+                addFieldElement(xmlDoc,fNode,"SourceName",fieldName)
             else:
-                addFieldElement(xmlDoc,fNode,"SourceName","*"+field.name+"*")
+                addFieldElement(xmlDoc,fNode,"SourceName","*"+fieldName+"*")
                
-            addFieldElement(xmlDoc,fNode,"TargetName",field.name)
+            addFieldElement(xmlDoc,fNode,"TargetName",fieldName)
             addFieldElement(xmlDoc,fNode,"Method","Copy")
             addFieldElement(xmlDoc,fNode,"FieldType",field.type)
             addFieldElement(xmlDoc,fNode,"FieldLength",str(field.length))
             i += 1
-
+		names = []
         setSourceFields(xmlDoc,dataset,sourceNames)
         # Should add a template section for value maps, maybe write domains...
             
@@ -132,10 +133,11 @@ def getFields(desc,dataset):
     ignore = []
     for name in ["OIDFieldName","ShapeFieldName","LengthFieldName","AreaFieldName"]:
         val = getFieldExcept(desc,name)
+		val = [val.rfind(".")+1:]
         if val != None:
           ignore.append(val)
     for field in arcpy.ListFields(dataset):
-        if field.name not in ignore:
+        if field.name[field.name.rfind(".")+1:] not in ignore:
           fields.append(field)
           
     return fields
@@ -155,7 +157,7 @@ def setDefaultProperties(source,dataElementName,sourceDataset,sourceName,targetN
     source.setAttribute("targetName",targetName)
 
     if dataElementName == "MapLayer":
-        source.setAttribute("fieldPrefixes","")
+        #source.setAttribute("fieldPrefixes","")
         source.setAttribute("sourceIDField","OBJECTID")
 
     elif dataElementName == "CADDataset":
