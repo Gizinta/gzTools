@@ -112,19 +112,8 @@ def main(argv = None):
     arcpy.SetParameter(SUCCESS, success)
 
     arcpy.ClearWorkspaceCache_management(defaultWorkspace)
-    if desc.workspaceType == "RemoteDatabase":
-        try:
-            gzSupport.addMessage("Database Compress...")
-            arcpy.Compress_management(defaultWorkspace)
-        except:
-            gzSupport.addMessage("Database Compress failed, continuing")
-    elif desc.workspaceType == "LocalDatabase":
-        try:
-            gzSupport.addMessage("Database Compact...")
-            arcpy.Compact_management(defaultWorkspace)
-            arcpy.Compact_management(gzSupport.workspace)
-        except:
-            gzSupport.addMessage("Local Database Compact failed, continuing")
+    gzSupport.compressGDB(gzSupport.workspace)
+    gzSupport.compressGDB(defaultWorkspace)
     gzSupport.closeLog()
     return
 

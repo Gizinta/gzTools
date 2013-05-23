@@ -28,9 +28,7 @@ def main(argv = None):
             gzSupport.addMessage(gzSupport.workspace + " does not exist, attempting to create")
             gzSupport.createGizintaGeodatabase()
         else:
-            arcpy.Compact_management(gzSupport.workspace)
-
-        gzSupport.setupLogTables()
+            gzSupport.compressGDB(gzSupport.workspace)
         if len(datasets) > 0:
             progBar = len(datasets) + 1
             arcpy.SetProgressor("step", "Importing Datasets...", 0,progBar, 1) 

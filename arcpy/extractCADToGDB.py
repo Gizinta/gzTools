@@ -29,10 +29,7 @@ def main(argv = None):
         gzSupport.addMessage(gzSupport.workspace + " does not exist, attempting to create")
         gzSupport.createGizintaGeodatabase()
     else:
-        arcpy.Compact_management(gzSupport.workspace)
-
-    gzSupport.setupLogTables()
-
+        gzSupport.compressGDB(gzSupport.workspace)
     arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     try:
         gzSupport.addMessage("Looking for drawings modified since " + since)

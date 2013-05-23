@@ -24,7 +24,7 @@ valueMappings = gzSupport.getXmlElements(xmlDoc,"ValueMaps")
 
 def main(argv = None):
     success = True
-    arcpy.Compact_management(gzSupport.workspace)
+    gzSupport.compressGDB(gzSupport.workspace)
     arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     for dataset in datasets:
         arcpy.env.Workspace = gzSupport.workspace

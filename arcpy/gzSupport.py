@@ -32,6 +32,7 @@ def startLog():
     fName = getLogFileName(sys.argv[0])
     log = open(fName, "w")
     addMessage(loadTime)
+    setupLogTables()
 
 def closeLog():
     global log
@@ -222,8 +223,6 @@ def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause):
         exit(-1)
     return(viewName)
 
-
-    
 def deleteRows(workspace,fClassName,expr):
     # delete rows in feature class
     arcpy.env.workspace = workspace # keep setting the workspace to force load activities
@@ -264,7 +263,6 @@ def appendRows(sourceTable,targetTable,expr):
     retcode = True
 
     return retcode
-
 
 def logDatasetProcess(loadName,dataset,status):
 
@@ -641,27 +639,34 @@ def setupLogTables():
         errorTable = errorTable[rfind(os.sep)+1:]
 
     if not arcpy.Exists(logTableFull):
-        arcpy.CreateTable_management(workspace,logTableName)
-        addField(logTableFull,"PROCNAME","TEXT",100)
-        addField(logTableFull,"LOADTIME","DATE","")
-        addField(logTableFull,"LOADNAME","TEXT",100)
-        addField(logTableFull,"DATASET","TEXT",50)
-        addField(logTableFull,"COMPLETED","SHORT","")
-        addField(logTableFull,"LOADUSER","TEXT",50)
-        addField(logTableFull,"ACTIVEFLAG","TEXT",3)
-        addMessage(logTableName + " Created")
+        try:
+            arcpy.CreateTable_management(workspace,logTableName)
+            addField(logTableFull,"PROCNAME","TEXT",100)
+            addField(logTableFull,"LOADTIME","DATE","")
+            addField(logTableFull,"LOADNAME","TEXT",100)
+            addField(logTableFull,"DATASET","TEXT",50)
+            addField(logTableFull,"COMPLETED","SHORT","")
+            addField(logTableFull,"LOADUSER","TEXT",50)
+            addField(logTableFull,"ACTIVEFLAG","TEXT",3)
+            addMessage(logTableName + " Created")
+        except:
+            addMessage("Failed to Create" + logTableName)
+            
     if not arcpy.Exists(errorTableFull):
-        arcpy.CreateTable_management(workspace,errorTableName)
-        addField(errorTableFull,"PROCNAME","TEXT",100)
-        addField(errorTableFull,"SOURCENAME","TEXT",100)
-        addField(errorTableFull,"SRCIDFIELD","TEXT",50)
-        addField(errorTableFull,"SRCIDVAL","TEXT",50)
-        addField(errorTableFull,"DATASET","TEXT",50)
-        addField(errorTableFull,"REASON","TEXT",100)
-        addField(errorTableFull,"ERRUSER","TEXT",50)
-        addField(errorTableFull,"ERRTIME","DATE","")
-        addField(errorTableFull,"ACTIVEFLAG","TEXT",3)
-        addMessage(errorTableName + " Created")
+        try:
+            arcpy.CreateTable_management(workspace,errorTableName)
+            addField(errorTableFull,"PROCNAME","TEXT",100)
+            addField(errorTableFull,"SOURCENAME","TEXT",100)
+            addField(errorTableFull,"SRCIDFIELD","TEXT",50)
+            addField(errorTableFull,"SRCIDVAL","TEXT",50)
+            addField(errorTableFull,"DATASET","TEXT",50)
+            addField(errorTableFull,"REASON","TEXT",100)
+            addField(errorTableFull,"ERRUSER","TEXT",50)
+            addField(errorTableFull,"ERRTIME","DATE","")
+            addField(errorTableFull,"ACTIVEFLAG","TEXT",3)
+            addMessage(errorTableName + " Created")
+        except:
+            addMessage("Failed to Create" + errorTableName)
 
 def createGizintaGeodatabase():
     folder = workspace[:workspace.rfind(os.sep)]
@@ -825,4 +830,22 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset):
         result = False
     return result
 
-    
+def compressGDB(workspace):
+    # compact or compress the workspace
+    retVal = False
+    desc = arcpy.Describe(workspace)
+    if desc.workspaceType == "RemoteDatabase":
+        try:
+            addMessage("Database Compress...")
+            arcpy.Compress_management(defaultWorkspace)
+            retVal = True
+        except:
+            addMessage("Database Compress failed, continuing")
+    elif desc.workspaceType == "LocalDatabase":
+        try:
+            addMessage("Database Compact...")
+            arcpy.Compact_management(workspace)
+            retVal = True
+        except:
+            gzSupport.addMessage("Local Database Compact failed, continuing")
+    return retVal

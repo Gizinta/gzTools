@@ -25,7 +25,7 @@ valueMaps = gzSupport.getXmlElements(xmlDoc,"ValueMap")
 
 def main(argv = None):
     success = True
-    arcpy.Compact_management(gzSupport.workspace)
+    gzSupport.compressGDB(gzSupport.workspace)
     if len(datasets) > 0:
         progBar = len(datasets)
         arcpy.SetProgressor("step", "Running QA...", 0,progBar, 1) 
