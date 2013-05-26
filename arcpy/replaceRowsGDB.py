@@ -83,9 +83,9 @@ def main(argv = None):
     finally:
         arcpy.ResetProgressor()
         arcpy.SetParameter(SUCCESS, success)
-        gzSupport.closeLog()
         arcpy.ClearWorkspaceCache_management(targetGDB)
         gzSupport.compressGDB(targetGDB)
+        gzSupport.closeLog()
 
 def doInlineAppend(source,target):
     # perform the append from a source table to a target table
