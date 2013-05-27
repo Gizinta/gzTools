@@ -41,6 +41,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
     xmlDoc.appendChild(root)
     root.setAttribute("logTableName",'gzLog')
     root.setAttribute("errorTableName",'gzError')
+    root.setAttribute("version",'2013.1')
     root.setAttribute("xmlns:gizinta",'http://gizinta.com')
 
     extract = xmlDoc.createElement("Extract")
@@ -74,7 +75,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
         for field in fields:
             fNode = xmlDoc.createElement("Field")
             dataset.appendChild(fNode)
-			fieldName = field.name[field.name.rfind(".")+1:]
+            fieldName = field.name[field.name.rfind(".")+1:]
             if fieldName in sourceNames:
                 addFieldElement(xmlDoc,fNode,"SourceName",fieldName)
             else:
@@ -85,7 +86,6 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
             addFieldElement(xmlDoc,fNode,"FieldType",field.type)
             addFieldElement(xmlDoc,fNode,"FieldLength",str(field.length))
             i += 1
-		names = []
         setSourceFields(xmlDoc,dataset,sourceNames)
         # Should add a template section for value maps, maybe write domains...
             
@@ -133,12 +133,12 @@ def getFields(desc,dataset):
     ignore = []
     for name in ["OIDFieldName","ShapeFieldName","LengthFieldName","AreaFieldName"]:
         val = getFieldExcept(desc,name)
-		val = [val.rfind(".")+1:]
         if val != None:
-          ignore.append(val)
+            val = val[val.rfind(".")+1:]
+            ignore.append(val)
     for field in arcpy.ListFields(dataset):
         if field.name[field.name.rfind(".")+1:] not in ignore:
-          fields.append(field)
+            fields.append(field)
           
     return fields
 
