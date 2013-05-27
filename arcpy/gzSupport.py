@@ -650,7 +650,7 @@ def setupLogTables():
             addField(logTableFull,"ACTIVEFLAG","TEXT",3)
             addMessage(logTableName + " Created")
         except:
-            addMessage("Failed to Create" + logTableName)
+            addMessage("Failed to Create " + logTableName)
             
     if not arcpy.Exists(errorTableFull):
         try:
@@ -666,7 +666,7 @@ def setupLogTables():
             addField(errorTableFull,"ACTIVEFLAG","TEXT",3)
             addMessage(errorTableName + " Created")
         except:
-            addMessage("Failed to Create" + errorTableName)
+            addMessage("Failed to Create " + errorTableName)
 
 def createGizintaGeodatabase():
     folder = workspace[:workspace.rfind(os.sep)]
@@ -847,5 +847,5 @@ def compressGDB(workspace):
             arcpy.Compact_management(workspace)
             retVal = True
         except:
-            gzSupport.addMessage("Local Database Compact failed, continuing")
+            addMessage("Local Database Compact failed, continuing")
     return retVal
