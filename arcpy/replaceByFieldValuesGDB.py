@@ -32,6 +32,8 @@ gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
 
 settings = gzSupport.getXmlElements(xmlDoc,"AppendSettings")[0]
+fieldNames = gzSupport.getNodeValue(settings,"FieldNames")
+fieldNames = fieldNames.split(",")
 
 try:
     versionName = gzSupport.getNodeValue(settings,"VersionName")
