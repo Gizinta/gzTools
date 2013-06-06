@@ -204,7 +204,8 @@ def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause):
         fLayerStr = ""
         tableList = []
         desc = arcpy.Describe(sourceLayer)
-        for field in desc.Fields: # drop any field prefix from the source layer (happens with map joins)
+        fields = arcpy.ListFields(sourceLayer)
+        for field in fields: # drop any field prefix from the source layer (happens with map joins)
             tableName = field.name[:field.name.rfind(".")]
             try:
                 tableList.index(tableName)
