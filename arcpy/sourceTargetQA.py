@@ -173,7 +173,8 @@ def findDuplicates(dataset,table,field):
     fieldValues = gzSupport.getFieldValues("All",[field],[dataset])[0]
     delta = len(diffValues)
     if delta > 0:
-        gzSupport.addMessage(str(len(fieldValues)) + " All : " + str(len(uniqueValues)) + " Unique")
+        count = int(arcpy.GetCount_management(dataset).getOutput(0))
+        gzSupport.addMessage(str(count) + " rows : " + str(len(uniqueValues)) + " Unique")
         gzSupport.addError(str(delta) + " Duplicates found, results located in " + gzSupport.errorTableName)
         for x in diffValues:
             gzSupport.logProcessError(table,field,str(x),field,"Duplicate Value:" + str(x))
@@ -205,9 +206,11 @@ def checkValueMaps(dataset,table,field,fieldName,mapName):
     if method == "ValueMap":
         fieldMapName = gzSupport.getNodeValue(field,"ValueMapName")
         otherwise = gzSupport.getNodeValue(field,"ValueMapOtherwise")
+        found = False
         for map in valueMaps:
             mapNodeName = map.getAttributeNode("name").nodeValue
-            if mapNodeName == fieldMapName:
+            if mapNodeName == fieldMapName and not found:
+                found = True # it is possible for the same value map to be present in multiple gizinta project files, just use the first one.
                 mapValues = gzSupport.getNodeValue(map,mapName).split(",")
                 if otherwise != None and otherwise != '' and otherwise not in mapValues and not otherwise.count(" ") > 2:
                     mapValues.append(otherwise)
