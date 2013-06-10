@@ -104,7 +104,7 @@ def setFieldValues(table,fields):
         gzSupport.addMessage(msg[msg.find("Error Info:"):])
         row = None
         
-    valueMaps = xmlDoc.getElementsByTagName("ValueMap")
+    valueMaps = gzSupport.getXmlElements(xmlDoc,"ValueMap")
     result = arcpy.GetCount_management(table)
     numFeat = int(result.getOutput(0))
     gzSupport.addMessage(table + ", " + str(numFeat) + " features")
