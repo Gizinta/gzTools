@@ -1,4 +1,4 @@
-Gizinta is a set of ArcGIS Desktop Tools for moving data between formats and data models.
+Gizinta is a set of ArcGIS Desktop Tools written with arcpy for moving data between formats and data models.
 
 The primary use for Gizinta is to move data between Geodatabases within and between organizations.
 
