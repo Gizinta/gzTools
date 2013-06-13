@@ -100,7 +100,7 @@ def setFieldValues(table,fields):
         row = updateCursor.next()
     except Exception, ErrorDesc:
         gzSupport.addMessage( "Unable to update the Dataset, Python error is: ")
-        msg = str(getTraceback(Exception, ErrorDesc))
+        msg = str(getTraceback(Exception, ErrorDesc)) # this is the old style, could update
         gzSupport.addMessage(msg[msg.find("Error Info:"):])
         row = None
         
