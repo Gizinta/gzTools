@@ -170,10 +170,10 @@ def findDuplicates(dataset,table,field):
     uValues = gzSupport.getFieldValues("Unique",[field],[dataset])
     uniqueValues = uValues[0]
     diffValues = uValues[1]
-    fieldValues = gzSupport.getFieldValues("All",[field],[dataset])[0]
+    #fieldValues = gzSupport.getFieldValues("All",[field],[dataset])[0]
     delta = len(diffValues)
     if delta > 0:
-        count = int(arcpy.GetCount_management(dataset).getOutput(0))
+        count = int(arcpy.GetCount_management(table).getOutput(0))
         gzSupport.addMessage(str(count) + " rows : " + str(len(uniqueValues)) + " Unique")
         gzSupport.addError(str(delta) + " Duplicates found, results located in " + gzSupport.errorTableName)
         for x in diffValues:
