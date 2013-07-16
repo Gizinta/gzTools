@@ -78,7 +78,7 @@ def main(argv = None):
             s = s + 1
     except:
         gzSupport.showTraceback()
-        gzSupport.addError(pymsg)
+        gzSupport.addError("Unable to append datasets")
         success = False
         gzSupport.logDatasetProcess(name,"appendAlltoGDB",success)
     finally:
