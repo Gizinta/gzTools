@@ -108,7 +108,7 @@ def getName(desc,dataset):
         baseName = desc.baseName[desc.baseName.rfind('.')+1:]
     else:
         baseName = desc.baseName
-    if desc.dataElementType == "DEShapefile":
+    if desc.dataElementType == "DEShapeFile":
         baseName = baseName + ".shp"
     return baseName    
 
@@ -183,7 +183,7 @@ def getExtractElementName(desc,sourceDataset):
         deType = "GDBDataset"
     elif desc.dataElementType == "DETable":
         deType = "GDBDataset"
-    elif desc.dataElementType == "DEShapefile":
+    elif desc.dataElementType == "DEShapeFile":
         deType = "GDBDataset"
     return deType
 
