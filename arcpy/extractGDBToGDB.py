@@ -70,8 +70,11 @@ def main(argv = None):
     finally:
         arcpy.ResetProgressor()
         arcpy.RefreshCatalog(gzSupport.workspace)
-        arcpy.ClearWorkspaceCache_management(sourceWorkspace)
-        arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
+        try:
+            arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
+            arcpy.ClearWorkspaceCache_management(sourceWorkspace)
+        except:
+            gzSupport.addMessage("Unable to clear workspace cache, continuing")
 
     if success == False:
         gzSupport.addError("Errors occurred during process, look in log files for more information")        
