@@ -137,11 +137,11 @@ def setFieldValues(table,fields):
                 except:
                     sourceName = ""
 
-                if sourceName != "":
+                if sourceName != "" and not sourceName.startswith("*"):
                     try:
                         currentValue = row.getValue(sourceName)
                     except:
-                        gzSupport.addMessage("No value for "  + sourceName)
+                        #gzSupport.addMessage("No value for "  + sourceName)
                         currentValue = "None" # handle the case where the source field does not exist or is blank
 
                 method = gzSupport.getNodeValue(field,"Method")
