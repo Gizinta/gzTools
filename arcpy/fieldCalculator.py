@@ -129,6 +129,8 @@ def setFieldValues(table,fields):
                 gzSupport.addMessage("Processing feature " + str(i))
 
             for field in fields:
+                method = "None"
+                currentValue = "None"
                 targetName = gzSupport.getNodeValue(field,"TargetName")
                 try:
                     sourceName = gzSupport.getNodeValue(field,"SourceName")# handle the case where the source field does not exist or is blank
