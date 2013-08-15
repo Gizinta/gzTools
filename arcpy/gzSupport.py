@@ -651,7 +651,7 @@ def setupLogTables():
             addField(logTableFull,"ACTIVEFLAG","TEXT",3)
             addMessage(logTableName + " Created")
         except:
-            addMessage("Failed to Create " + logTableName)
+            msg = "Failed to Create " + logTableName
             
     if not arcpy.Exists(errorTableFull):
         try:
@@ -667,7 +667,7 @@ def setupLogTables():
             addField(errorTableFull,"ACTIVEFLAG","TEXT",3)
             addMessage(errorTableName + " Created")
         except:
-            addMessage("Failed to Create " + errorTableName)
+            msg = "Failed to Create " + errorTableName
 
 def createGizintaGeodatabase():
     folder = workspace[:workspace.rfind(os.sep)]
