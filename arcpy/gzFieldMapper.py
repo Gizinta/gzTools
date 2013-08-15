@@ -13,16 +13,15 @@ debug = True
 # Parameters
 
 gzSupport.xmlFileName = arcpy.GetParameterAsText(0) # file name argument
-gzSupport.successParameterNumber = 1
+automap = arcpy.GetParameterAsText(1) # option to use auto field mapping
+gzSupport.successParameterNumber = 2
 
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
 gzSupport.startLog()
 xmlStr = ""
-url="http://www.gizinta.com/giztest/scripts/GizintaMapper.php"
+url="http://www.gizinta.com/fields/scripts/GizintaMapper.php"
 
 def main(argv = None):
-    startTime = gzSupport.getDBTime()
-    gzSupport.addMessage(startTime)
     success = True
     OpenBrowserURL(gzSupport.xmlFileName)
     gzSupport.closeLog()
@@ -34,18 +33,16 @@ def OpenBrowserURL(xmlFileName):
     xmlStrGizinta = xmlDoc.toxml()
     dsNode = xmlDoc.getElementsByTagName("Dataset")[0]
     target = dsNode.getAttributeNode("name").nodeValue
-    #gzSupport.addMessage("tg = " + target)
-    theData = [('gizinta', xmlStrGizinta),('target', target)]
+    theData = [('gizinta', xmlStrGizinta),('target', target),('automap',automap)]
     params = urllib.urlencode(theData)
     f = urllib.urlopen(url, params)
     fileName = f.read()
     gzSupport.addMessage(fileName )
-    url = 'http://www.gizinta.com/giztest/gizinta.html?target='+fileName
-    webbrowser.open(url, new=2)
-
-    #folder = xmlFileName[0:xmlFileName.rfind(os.sep)]
-    #url = 'http://www.gizinta.com/giztest/index.html?' + "GizintaFolder="+folder
-    #webbrowser.open(url,new=2)
+    if fileName.find("<Warning>") == -1 and fileName.find(">Error<") == -1:
+        url = 'http://www.gizinta.com/fields/gizinta.html?target='+fileName
+        webbrowser.open(url, new=2)
+    else:
+        gzSupport.addMessage("An error occurred interacting with gizinta.com. Please check your network connection and error messages printed above")
 
 def getDocument(dataset):
     gzSupport.addMessage(dataset)
