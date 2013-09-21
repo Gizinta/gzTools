@@ -14,6 +14,9 @@ debug = False
 folder = arcpy.GetParameterAsText(0) # folder with Gizinta Xml files
 wildcard = arcpy.GetParameterAsText(1) # wildcard for file name search
 outputFileName = arcpy.GetParameterAsText(2) # output file name argument, default is gzPlaylist.xml
+
+if not outputFileName.lower().endswith(".xml"):
+    outputFileName = outputFileName + ".xml"
 gzSupport.successParameterNumber = 3
 gzSupport.startLog()
 

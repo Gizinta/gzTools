@@ -16,6 +16,9 @@ debug = True
 sourceDataset = arcpy.GetParameterAsText(0) # source dataset to analyze
 targetDataset = arcpy.GetParameterAsText(1) # target dataset to analyze
 xmlFileName = arcpy.GetParameterAsText(2) # file name argument
+
+if not xmlFileName.lower().endswith(".xml"):
+    xmlFileName = xmlFileName + ".xml"
 gzSupport.successParameterNumber = 3
 gzSupport.startLog()
 xmlStr = ""
