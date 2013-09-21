@@ -279,7 +279,7 @@ def appendRows(sourceTable,targetTable,expr):
     targTable = targetTable[targetTable.rfind("\\")+1:]
     sTable = sourceTable[sourceTable.rfind("\\")+1:]
     viewName = sTable + "_View"
-    viewName = makeFeatureView(workspace,sourceTable,viewName,expr)
+    viewName = makeFeatureView(workspace,sourceTable,viewName,expr,[])
     arcpy.Append_management(viewName,targetTable,"NO_TEST")
     addMessage(targTable + " rows Appended ")
     retcode = True
