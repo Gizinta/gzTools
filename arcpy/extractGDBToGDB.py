@@ -32,28 +32,25 @@ def main(argv = None):
         if len(datasets) > 0:
             progBar = len(datasets) + 1
             arcpy.SetProgressor("step", "Importing Datasets...", 0,progBar, 1) 
-            deleteExistingRows(datasets)
+            #gzSupport.deleteExistingRows(datasets)
             arcpy.SetProgressorPosition()
         for dataset in datasets:
             gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
             sourceName = dataset.getAttributeNode("sourceName").nodeValue
             targetName = dataset.getAttributeNode("targetName").nodeValue
+            xmlFields = gzSupport.getXmlElements(xmlDoc,"Field")
             arcpy.SetProgressorLabel("Loading " + sourceName + " to " + targetName +"...")
             if not arcpy.Exists(os.path.join(sourceWorkspace,sourceName)):
                 gzSupport.addError(os.path.join(sourceWorkspace,sourceName + " does not exist, exiting"))
                 return
             if not arcpy.Exists(os.path.join(gzSupport.workspace,targetName)):
                 gzSupport.addMessage(os.path.join(gzSupport.workspace,targetName) + " does not exist")
-                mode = "export"
             else:
-                mode = "import"
+                arcpy.Delete_management(os.path.join(gzSupport.workspace,targetName))
 
             arcpy.env.Workspace = gzSupport.workspace
             try:
-                if mode == "import":
-                    retVal = gzSupport.importDataset(sourceWorkspace,sourceName,targetName,dataset)
-                elif mode == "export":
-                    retVal = gzSupport.exportDataset(sourceWorkspace,sourceName,targetName,dataset)
+                retVal = gzSupport.exportDataset(sourceWorkspace,sourceName,targetName,dataset, xmlFields)
                 if retVal == False:
                     success = False
             except:
@@ -83,19 +80,6 @@ def main(argv = None):
         
     gzSupport.closeLog()
     arcpy.SetParameter(SUCCESS, success)
-
-def deleteExistingRows(datasets):
-    for dataset in datasets:
-        name = dataset.getAttributeNode("targetName").nodeValue
-        table = os.path.join(gzSupport.workspace,name)
-        if arcpy.Exists(table):
-            arcpy.DeleteRows_management(table)
-            gzSupport.addMessage("Rows deleted from: " + name)
-        else:
-            gzSupport.addMessage(table + " does not exist")
-            
-    #gzSupport.deleteLogTableRows("Delete") # don't delete
-    #gzSupport.deleteErrorTableRows("Delete")
 
 
 if __name__ == "__main__":

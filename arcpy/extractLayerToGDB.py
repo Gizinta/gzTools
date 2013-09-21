@@ -16,7 +16,8 @@ SUCCESS = 4 # parameter number for output success value
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getXmlElements(xmlDoc,"MapLayer")
+datasets = gzSupport.getDatasets(xmlDoc)
+
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
@@ -87,7 +88,8 @@ def exportDataset(sourceLayer,targetName,dataset):
         gzSupport.addMessage("Where '" + whereClause + "'")
         sourceName = sourceLayer[sourceLayer.rfind(os.sep)+1:sourceLayer.lower().rfind(".lyr")]
         viewName = sourceName + "_View"
-        view = gzSupport.makeFeatureViewForLayer(gzSupport.workspace,sourceLayer,viewName,whereClause)
+        xmlFields = xmlDoc.getElementsByTagName("Field")
+        view = gzSupport.makeFeatureViewForLayer(gzSupport.workspace,sourceLayer,viewName,whereClause,xmlFields)
         count = arcpy.GetCount_management(view).getOutput(0)
         gzSupport.addMessage(str(count) + " source rows")
         arcpy.FeatureClassToFeatureClass_conversion(view,gzSupport.workspace,targetName)

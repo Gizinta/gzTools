@@ -139,7 +139,11 @@ def setFieldValues(table,fields):
 
                 if sourceName != "" and not sourceName.startswith("*"):
                     try:
-                        currentValue = row.getValue(sourceName)
+                        if sourceName != targetName and sourceName.upper() == targetName.upper():
+                            # special case for same name but different case - should already have the target name from extract functions
+                            currentValue = row.getValue(targetName)
+                        else:
+                            currentValue = row.getValue(sourceName)
                     except:
                         #gzSupport.addMessage("No value for "  + sourceName)
                         currentValue = "None" # handle the case where the source field does not exist or is blank

@@ -189,7 +189,7 @@ def getCountNullBlank(table,field,extraExpr):
     whereClause = "\"" + field + "\" is Null " + extraExpr
     success = True
 
-    viewName = gzSupport.makeFeatureView(gzSupport.workspace,table,"temp_"+field,whereClause)
+    viewName = gzSupport.makeFeatureView(gzSupport.workspace,table,"temp_"+field,whereClause,[])
     count = int(arcpy.GetCount_management(viewName).getOutput(0))
     if count > 0:
         gzSupport.addError(str(count) + " Null field values found")

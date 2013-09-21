@@ -95,6 +95,13 @@ def showTraceback():
     # print messages for use in Python/PythonWin
     addError(pymsg)
 
+def getDatasets(xmlDoc):
+    dsTypes = ["MapLayer","CADDataset","GDBDataset","Dataset"]
+    for atype in dsTypes:
+        datasets = getXmlElements(xmlDoc,atype)
+        if datasets != []:
+            return datasets
+
 def collect_text(node):
     # "A function that collects text inside 'node', returning that text."
     s = ""
@@ -169,12 +176,15 @@ def getCleanName(nameVal):
         cleanName = nameVal.split(".")[dotCount]
     return cleanName
 
-def makeFeatureView(workspace,sourceFC,viewName,whereClause):
+def makeFeatureView(workspace,sourceFC,viewName,whereClause,xmlFields):
     # make a feature view using the where clause
     if arcpy.Exists(sourceFC):
         if arcpy.Exists(viewName):
             arcpy.Delete_management(viewName) # delete view if it exists
-        arcpy.MakeFeatureLayer_management(sourceFC, viewName , whereClause, workspace)
+        desc = arcpy.Describe(sourceFC)
+        fields = arcpy.ListFields(sourceFC)
+        fStr = getViewString(fields,xmlFields)
+        arcpy.MakeFeatureLayer_management(sourceFC, viewName , whereClause, workspace, fStr)
         #addMessage("Feature Layer " + viewName + " created for " + str(whereClause))
     else:
         addError(sourceFC + " does not exist, exiting")
@@ -183,12 +193,15 @@ def makeFeatureView(workspace,sourceFC,viewName,whereClause):
         exit(-1)
     return(viewName)
 
-def makeTableView(workspace,sourceTable,viewName,whereClause):
+def makeTableView(workspace,sourceTable,viewName,whereClause,xmlfield):
     # make a table view using the where clause
     if arcpy.Exists(sourceTable):
         if arcpy.Exists(viewName):
             arcpy.Delete_management(viewName) # delete view if it exists
-        arcpy.MakeTableView_management(sourceTable, viewName , whereClause,workspace)
+        desc = arcpy.Describe(sourceTable)
+        fields = arcpy.ListFields(sourceTable)
+        fStr = getViewString(fields,xmlFields)
+        arcpy.MakeTableView_management(sourceTable, viewName , whereClause, workspace, fStr)
     else:
         addError(sourceFC + " does not exist, exiting")
         
@@ -196,26 +209,15 @@ def makeTableView(workspace,sourceTable,viewName,whereClause):
         exit(-1)
     return(viewName)
 
-def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause):
-    # Process: Make Feature Layer from a .lyr file - drop prefixes
+def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause,xmlFields):
+    # Process: Make Feature Layers - drop prefixes as needed
     if arcpy.Exists(sourceLayer):
         if arcpy.Exists(viewName):
             arcpy.Delete_management(viewName) # delete view if it exists
-        fLayerStr = ""
-        tableList = []
+
         desc = arcpy.Describe(sourceLayer)
         fields = arcpy.ListFields(sourceLayer)
-        for field in fields: # drop any field prefix from the source layer (happens with map joins)
-            tableName = field.name[:field.name.rfind(".")]
-            try:
-                tableList.index(tableName)
-            except:
-                tableList.append(tableName)
-                
-            thisFieldName = field.name[field.name.rfind(".")+1:]
-            thisFieldStr = field.name + " " + thisFieldName + " VISIBLE NONE;" 
-            addMessage(thisFieldName)
-            fLayerStr += thisFieldStr
+        fLayerStr = getViewString(fields,xmlFields)
         arcpy.MakeFeatureLayer_management(sourceLayer, viewName, whereClause, workspace,fLayerStr)
     else:
         addError(sourceFC + " does not exist, exiting")
@@ -223,6 +225,25 @@ def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause):
     if not arcpy.Exists(viewName):
         exit(-1)
     return(viewName)
+
+def getViewString(fields,xmlFields):
+
+    viewStr = ""
+    for field in fields: # drop any field prefix from the source layer (happens with map joins)  
+        thisFieldName = field.name[field.name.rfind(".")+1:]
+        for xmlField in xmlFields:
+            sourcename = getNodeValue(xmlField,"SourceName")
+            if sourcename == thisFieldName:
+                targetname = getNodeValue(xmlField,"TargetName")
+                if sourcename != targetname and sourcename.upper() == targetname.upper():
+                    # this is a special case where the source name is different case but the same string as the target
+                    # need to create table so that the name matches the target name so there is no conflict later
+                    thisFieldName = targetname
+            
+        thisFieldStr = field.name + " " + thisFieldName + " VISIBLE NONE;" 
+        viewStr += thisFieldStr
+
+    return viewStr
 
 def deleteRows(workspace,fClassName,expr):
     # delete rows in feature class
@@ -749,16 +770,16 @@ def convertDataset(dataElementType,sourceTable,workspace,targetName,whereClause)
         arcpy.TableToTable_conversion(sourceTable,workspace,targetName,whereClause)
 
 
-def makeView(deType,workspace,sourceTable,viewName,whereClause):
+def makeView(deType,workspace,sourceTable,viewName,whereClause, xmlFields):
     view = None
     if deType == "DETable":
-        view = makeTableView(workspace,sourceTable,viewName, whereClause)
+        view = makeTableView(workspace,sourceTable,viewName, whereClause,xmlFields)
     if deType == "DEFeatureClass":
-        view = makeFeatureView(workspace,sourceTable,viewName, whereClause)
+        view = makeFeatureView(workspace,sourceTable,viewName, whereClause, xmlFields)
 
     return view    
 
-def exportDataset(sourceWorkspace,sourceName,targetName,dataset):
+def exportDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     result = True
     sourceTable = os.path.join(sourceWorkspace,sourceName)
     targetTable = os.path.join(workspace,targetName)
@@ -773,13 +794,11 @@ def exportDataset(sourceWorkspace,sourceName,targetName,dataset):
         deType = desc.dataElementType
         if whereClause != '':
             addMessage("Where " + whereClause)
-            viewName = sourceName + "_View"
-            view = makeView(deType,workspace,sourceTable,viewName, whereClause)
-            count = arcpy.GetCount_management(view).getOutput(0)
-            addMessage(str(count) + " source rows")
-            convertDataset(deType,view,workspace,targetName,whereClause)
-        else:
-            convertDataset(deType,sourceTable,workspace,targetName,"")
+        viewName = sourceName + "_View"
+        view = makeView(deType,workspace,sourceTable,viewName, whereClause,xmlFields)
+        count = arcpy.GetCount_management(view).getOutput(0)
+        addMessage(str(count) + " source rows")
+        convertDataset(deType,view,workspace,targetName,whereClause)
     except:
         err = "Failed to create new dataset " + targetName
         addError(err)
@@ -788,7 +807,7 @@ def exportDataset(sourceWorkspace,sourceName,targetName,dataset):
     return result
 
 
-def importDataset(sourceWorkspace,sourceName,targetName,dataset):
+def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     result = True
     sourceTable = os.path.join(sourceWorkspace,sourceName)
     targetTable = os.path.join(workspace,targetName)
@@ -810,19 +829,20 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset):
             addError(err)
             logProcessError(targetTable,sourceIDField,sourceName,targetName,err)
             return False
+        #if whereClause != '':
+        desc = arcpy.Describe(sourceTable)
+        deType = desc.dataElementType
         if whereClause != '':
-            desc = arcpy.Describe(sourceTable)
-            deType = desc.dataElementType
             addMessage("Where " + whereClause)
-            viewName = sourceName + "_View"
-            view = makeView(deType,workspace,sourceTable,viewName, whereClause)
-            count = arcpy.GetCount_management(view).getOutput(0)
-            addMessage(str(count) + " source rows")
-            arcpy.Append_management([view],targetTable, "NO_TEST","","")
-        else:
-            count = arcpy.GetCount_management(sourceTable).getOutput(0)
-            addMessage(str(count) + " source rows")
-            arcpy.Append_management([sourceTable],targetTable, "NO_TEST","","")
+        viewName = sourceName + "_View"
+        view = makeView(deType,workspace,sourceTable,viewName, whereClause, xmlFields)
+        count = arcpy.GetCount_management(view).getOutput(0)
+        addMessage(str(count) + " source rows")
+        arcpy.Append_management([view],targetTable, "NO_TEST","","")
+        #else:
+        #    count = arcpy.GetCount_management(sourceTable).getOutput(0)
+        #    addMessage(str(count) + " source rows")
+        #    arcpy.Append_management([sourceTable],targetTable, "NO_TEST","","")
             
     except:
         err = "Failed to import layer " + targetName
@@ -830,6 +850,17 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset):
         logProcessError(sourceTable,sourceIDField,sourceName,targetName,err)
         result = False
     return result
+
+def deleteExistingRows(datasets):
+    for dataset in datasets:
+        name = dataset.getAttributeNode("targetName").nodeValue
+        table = os.path.join(workspace,name)
+        if arcpy.Exists(table):
+            arcpy.DeleteRows_management(table)
+            addMessage("Rows deleted from: " + name)
+        else:
+            addMessage(table + " does not exist")
+
 
 def compressGDB(workspace):
     # compact or compress the workspace

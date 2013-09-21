@@ -38,7 +38,6 @@ def main(argv = None):
         if len(cadFiles) > 0:
             progBar = len(cadFiles) + 1
             arcpy.SetProgressor("step", "Importing Drawings...", 0,progBar, 1) 
-            deleteExistingRows(datasets)
             arcpy.SetProgressorPosition()
         for item in cadFiles:
             cadPath = item[0]
@@ -52,21 +51,18 @@ def main(argv = None):
                     name = dataset.getAttributeNode("name").nodeValue
 
                 gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
+                xmlFields = gzSupport.getXmlElements(xmlDoc,"Field")
                 arcpy.SetProgressorLabel("Loading " + name + " for " + cadName + "...") 
                 arcpy.env.Workspace = gzSupport.workspace
                 targetName = dataset.getAttributeNode("targetName").nodeValue
                 sourceWorkspace = os.path.join(cadPath,cadName)
                 if not arcpy.Exists(os.path.join(gzSupport.workspace,targetName)):
                     gzSupport.addMessage(os.path.join(gzSupport.workspace,targetName) + " does not exist")
-                    mode = "export"
                 else:
-                    mode = "import"
+                    arcpy.Delete_management(os.path.join(gzSupport.workspace,targetName))
 
                 try:
-                    if mode == "import":
-                        retVal = gzSupport.importDataset(sourceWorkspace,name,targetName,dataset)
-                    elif mode == "export":
-                        retVal = gzSupport.exportDataset(sourceWorkspace,name,targetName,dataset)
+                    retVal = gzSupport.exportDataset(sourceWorkspace,name,targetName,dataset,xmlFields)
                     #retVal = importLayer(cadPath,cadName,dataset)
                     if retVal == False:
                         success = False
@@ -196,19 +192,6 @@ def joinToCsv(view, dataset,cadPath,cadName):
         #        arcpy.Delete_management(tempTable)
 
     return [retVal,view]
-
-def deleteExistingRows(datasets):
-    for dataset in datasets:
-        try:
-            name = dataset.getAttributeNode("targetName").nodeValue
-        except:
-            name = dataset.getAttributeNode("name").nodeValue
-        table = os.path.join(gzSupport.workspace,name)
-        if arcpy.Exists(table):
-            arcpy.DeleteRows_management(table)
-            gzSupport.addMessage("Rows deleted from: " + name)
-    #gzSupport.deleteLogTableRows("Delete") # don't delete
-    #gzSupport.deleteErrorTableRows("Delete")
 
 def getFileList(inputFolder,fileExt,minTime): # get a list of files - recursively
     inputFiles = []
