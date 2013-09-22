@@ -633,6 +633,11 @@ def addGizintaField(table,targetName,field,attrs):
             retcode = True
         except :
             showTraceback()
+            fields = arcpy.ListFields(table)
+            for field in fields: # drop any field prefix from the source layer (happens with map joins)  
+                thisFieldName = field.name[field.name.rfind(".")+1:]
+                if thisFieldName.upper() == targetName.upper():
+                    addMessage("WARNING: Existing field name '" + thisFieldName + "' conflicts with new field name '" + targetName + "'. Identical names with different case are not supported by databases!\n")             
     return 
 
 def addField(table,fieldName,fieldType,fieldLength):
