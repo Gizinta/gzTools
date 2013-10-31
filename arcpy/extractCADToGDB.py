@@ -39,6 +39,7 @@ def main(argv = None):
             progBar = len(cadFiles) + 1
             arcpy.SetProgressor("step", "Importing Drawings...", 0,progBar, 1) 
             arcpy.SetProgressorPosition()
+            gzSupport.deleteExistingRows(datasets)
         for item in cadFiles:
             cadPath = item[0]
             cadName = item[1]
@@ -56,14 +57,18 @@ def main(argv = None):
                 arcpy.env.Workspace = gzSupport.workspace
                 targetName = dataset.getAttributeNode("targetName").nodeValue
                 sourceWorkspace = os.path.join(cadPath,cadName)
+                exists= False
                 if not arcpy.Exists(os.path.join(gzSupport.workspace,targetName)):
                     gzSupport.addMessage(os.path.join(gzSupport.workspace,targetName) + " does not exist")
                 else:
-                    arcpy.Delete_management(os.path.join(gzSupport.workspace,targetName))
+                    exists = True
+                    #arcpy.Delete_management(os.path.join(gzSupport.workspace,targetName))
 
                 try:
-                    retVal = gzSupport.exportDataset(sourceWorkspace,name,targetName,dataset,xmlFields)
-                    #retVal = importLayer(cadPath,cadName,dataset)
+                    if not exists==True:
+                        retVal = gzSupport.exportDataset(sourceWorkspace,name,targetName,dataset,xmlFields)
+                    else:
+                        retVal = importLayer(cadPath,cadName,dataset)
                     if retVal == False:
                         success = False
                 except:
