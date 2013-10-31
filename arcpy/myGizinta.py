@@ -15,7 +15,20 @@
 	# <FieldLength>50</FieldLength>
 # </Field>
 
+import sys,os,time
+
 def defaultUserName():
 	return "Jacob Marley"
-	
+
+def timer(input):
+    return time.time() - input
+
+def getDBTime():
+    return getStrTime(time.localtime())
+
+def getStrTime(timeVal):
+    return time.strftime("%Y-%m-%d %H:%M:%S", timeVal)
+
+def getTimeFromStr(timeStr):
+    return time.strptime(timeStr,"%d/%m/%Y %I:%M:%S %p")	
 	
