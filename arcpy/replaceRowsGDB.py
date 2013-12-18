@@ -36,7 +36,7 @@ else:
     for dataset in datasets:
         name = dataset.getAttributeNode("name").nodeValue
         datasetNames.append(name.upper())
-        
+
 SUCCESS = 3 # parameter number for output success value
 gzSupport.startLog()
 
