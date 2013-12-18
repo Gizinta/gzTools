@@ -24,25 +24,35 @@ maxErrorCount = 100 # max errors before a script will stop
 
 # helper functions
 def startLog():
+    # gz functions write to a log file. Use this function to open it
+    gc.enable()
     global log
     global startTime
     global loadTime
     startTime = timer(0)
     loadTime = getDBTime()
-    fName = getLogFileName(sys.argv[0])
-    log = open(fName, "w")
+    openLog()
     addMessage(loadTime)
     setupLogTables()
 
+def openLog():
+    # open the log file for writing
+    global log
+    fName = getLogFileName(sys.argv[0])
+    log = open(fName, "w")
+
 def closeLog():
+    # close the log file, write some messages and clean up
     global log
     endTime = timer(0)
     addMessage(getDBTime())
     addMessage("Processing time: " + ' (' + str(int(timer(startTime)/60)) + 'm ' + str(int(timer(startTime) % 60)) + 's)')
     if log != [] and log != None:
         log.close()
+    cleanupGarbage()
 
 def getLogFileName(sysargv):
+    # get the name of the log file to write
     fName = ""
     try:
         fName = sysargv[:sysargv.rfind(".py")] + ".log" # make it a .log file
@@ -52,38 +62,51 @@ def getLogFileName(sysargv):
     return fName
 
 def timer(input):
+    # time difference
     return time.time() - input
 
 def getDBTime():
+    # format time val for db insert
     return getStrTime(time.localtime())
 
 def getStrTime(timeVal):
+    # get string time for a time value
     return time.strftime("%Y-%m-%d %H:%M:%S", timeVal)
 
 def getTimeFromStr(timeStr):
+    # get timeVal from a string
     return time.strptime(timeStr,"%d/%m/%Y %I:%M:%S %p")
 
 def addMessage(val):
+    # write a message to the screen and the log file
     global log
     arcpy.AddMessage(str(val))
-    print str(val)
-    if log != []:
-        log.write(str(val) + "\n")
+    logMessage(val)
 
 def addError(val):
+    # add an error to the screen output and log file
+    global log
     arcpy.AddMessage("Error: " + str(val))
-    print str(val)
-    if log != []:
-        log.write(str(val) + "\n")
+    logMessage(val)
 
-def timer(input):
-    return time.time() - input
-
+def logMessage(val):
+    # write a message to the log file
+    try:
+        if log != []:
+            log.write(str(val) + "\n")
+    except:
+        try:
+            openLog()
+            log.write(str(val) + "\n")
+        except:
+            arcpy.AddMessage("Unable to write to log file " + getLogFileName())
+    
 def strToBool(s):
-  return s.lower() in ("yes", "true", "t", "1")
+    # return a boolean for values like 'true'
+    return s.lower() in ("yes", "true", "t", "1")
 
 def showTraceback():
-    # get the traceback object
+    # get the traceback object and print it out
     tBack = sys.exc_info()[2]
     # tbinfo contains the line number that the code failed on and the code from that line
     tbinfo = traceback.format_tb(tBack)
@@ -96,6 +119,7 @@ def showTraceback():
     addError(pymsg)
 
 def getDatasets(xmlDoc):
+    # get the list of datasets from XML doc
     dsTypes = ["MapLayer","CADDataset","GDBDataset","Dataset"]
     for atype in dsTypes:
         datasets = getXmlElements(xmlDoc,atype)
@@ -131,6 +155,7 @@ def getArcpyErrorMessage():
     return retVal
 
 def testSchemaLock(dataset):
+    # test if a schema lock is possible
     res = arcpy.TestSchemaLock(dataset)
     return res
 
@@ -148,11 +173,12 @@ def cleanupGarbage():
             print('Remaining Garbage:' + str(gc.garbage))
 
 def cleanup(inWorkspace):
+    # general cleanup function
     cleanupGarbage()
     arcpy.ClearWorkspaceCache_management(inWorkspace)
 
 def getWorkspacePath(path):
-
+    # get the path of the workspace
     workspace = arcpy.Describe(path) # preset
     dirName = os.path.dirname(path)
     if dirName and arcpy.Exists(dirName):
@@ -170,6 +196,7 @@ def getWorkspacePath(path):
     return workspace    
 
 def getCleanName(nameVal):
+    # strip leading database prefix values
     cleanName = nameVal
     dotCount = nameVal.count(".")
     if dotCount > 0:
@@ -227,7 +254,7 @@ def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause,xmlFields
     return(viewName)
 
 def getViewString(fields,xmlFields):
-
+    # get the string for creating a view
     viewStr = ""
     for field in fields: # drop any field prefix from the source layer (happens with map joins)  
         thisFieldName = field.name[field.name.rfind(".")+1:]
@@ -287,7 +314,7 @@ def appendRows(sourceTable,targetTable,expr):
     return retcode
 
 def logDatasetProcess(loadName,dataset,status):
-
+    # log process status for a function after completion
     logTable = os.path.join(workspace,logTableName)
     retcode = False
     if not arcpy.Exists(logTable):
@@ -329,7 +356,7 @@ def logDatasetProcess(loadName,dataset,status):
 
 
 def logProcessError(sourceName,sourceIDField,sourceIDValue,dataset,reason):
-
+    # log a specific error that ocurred in the processing
     errTable = os.path.join(workspace,errorTableName)
     retcode = False
     if not arcpy.Exists(errTable):
@@ -377,6 +404,7 @@ def logProcessError(sourceName,sourceIDField,sourceIDValue,dataset,reason):
 
 
 def deleteLogRows(mode,tableName):
+    # delete rows from the log tables
     table = os.path.join(workspace,tableName)
     if mode.upper() == "ARCHIVE":
         try:
@@ -394,12 +422,15 @@ def deleteLogRows(mode,tableName):
     addMessage(msg + tableName)
 
 def deleteLogTableRows(mode):
+    # delete from gzlog
     deleteLogRows(mode,logTableName)
     
 def deleteErrorTableRows(mode):
+    # delete from gzError
     deleteLogRows(mode,errorTableName)
 
 def createVersion(sde,defaultVersion,versionName):
+    # create a version in the database
     retcode = False
     loc = versionName.find(".")
     if loc > -1:
@@ -433,6 +464,7 @@ def createVersion(sde,defaultVersion,versionName):
     return retcode 
 
 def changeVersion(tableName,versionName):
+    # change to a new version in the database
     retVal = False
     try:
         arcpy.ChangeVersion_management(tableName,"TRANSACTIONAL",versionName)
@@ -442,6 +474,7 @@ def changeVersion(tableName,versionName):
     return retVal
  
 def deleteVersion(sde,versionName):
+    # delete a version from the database
     addMessage("Deleting Version...")
     retcode = False
     if versionName.split(".")[0] == versionName:
@@ -465,6 +498,7 @@ def deleteVersion(sde,versionName):
     return retcode
 
 def reconcilePost(sdeDefault,versionName,defaultVersion):
+    # reconcile and post a version
     addMessage("Reconcile and Post Version... ")
 
     if versionName.split(".")[0] == versionName:
@@ -551,7 +585,7 @@ def nameTrimmer(name):
         return name.upper()
     
 def getFieldValues(mode,fields,datasets):
-
+    # get a list of field values, returns all values and the unique values.
     theValues = [] # unique list of values
     theDiff = [] # all values
     for dataset in datasets:
@@ -608,6 +642,7 @@ def getFieldValues(mode,fields,datasets):
     return [theValues,theDiff]
 
 def addGizintaField(table,targetName,field,attrs):
+    # add a field to a gizinta Geodatabase
     retcode = False
     fieldProperties = []
     fieldProps = getNodeValue(field,"FieldProperties")
@@ -641,6 +676,7 @@ def addGizintaField(table,targetName,field,attrs):
     return 
 
 def addField(table,fieldName,fieldType,fieldLength):
+    # add a field to a Geodatabase
     retcode = False
     try:
         if fieldLength == None:
@@ -653,6 +689,7 @@ def addField(table,fieldName,fieldType,fieldLength):
     return retcode
 
 def setupLogTables():
+    # setup the log tables if they do not exist
     if logTableName.rfind(os.sep) == -1:
         logTableFull = os.path.join(workspace,logTableName)
     else:
@@ -696,6 +733,7 @@ def setupLogTables():
             msg = "Failed to Create " + errorTableName
 
 def createGizintaGeodatabase():
+    # Create a workspace - file GDB
     folder = workspace[:workspace.rfind(os.sep)]
     fgdb = workspace[workspace.rfind(os.sep)+1:]
     retcode = False
@@ -709,10 +747,12 @@ def createGizintaGeodatabase():
     return retcode
                    
 def checkXmlSettings(xmlFile,sources,targets):
+    # not implemented, could check all XML settings
     retVal = True
     return retVal
 
 def isGizintaDocument(xmlDoc):
+    # Is the first node Gizinta in the XML document?
     GizintaNode = None
     try:
         GizintaNode = xmlDoc.getElementsByTagName("Gizinta")
@@ -725,6 +765,7 @@ def isGizintaDocument(xmlDoc):
     return retVal
     
 def isPlaylistDocument(xmlDoc):
+    # Is the first node a Gizinta Playlist?
     PlaylistNode = None
     try:
         PlaylistNode = xmlDoc.getElementsByTagName("GizintaPlaylist")
@@ -737,6 +778,7 @@ def isPlaylistDocument(xmlDoc):
     return retVal
     
 def getRootElement(xmlDoc):
+    # get the root element
     retDoc = None
     if isGizintaDocument(xmlDoc):
         retDoc = xmlDoc.getElementsByTagName("Gizinta")[0]
@@ -745,6 +787,7 @@ def getRootElement(xmlDoc):
     return retDoc
 
 def getXmlElements(xmlDoc,elemName):
+    # get Xml elements from a file or files in a playlist
     retDoc = None
     if isGizintaDocument(xmlDoc):
         retDoc = xmlDoc.getElementsByTagName(elemName)
@@ -769,6 +812,7 @@ def getXmlElements(xmlDoc,elemName):
     return retDoc  
 
 def convertDataset(dataElementType,sourceTable,workspace,targetName,whereClause):
+    # convert a dataset
     if dataElementType == "DEFeatureClass":
         arcpy.FeatureClassToFeatureClass_conversion(sourceTable,workspace,targetName,whereClause)
     elif dataElementType == "DETable":
@@ -776,6 +820,7 @@ def convertDataset(dataElementType,sourceTable,workspace,targetName,whereClause)
 
 
 def makeView(deType,workspace,sourceTable,viewName,whereClause, xmlFields):
+    # make a view
     view = None
     if deType == "DETable":
         view = makeTableView(workspace,sourceTable,viewName, whereClause,xmlFields)
@@ -785,6 +830,7 @@ def makeView(deType,workspace,sourceTable,viewName,whereClause, xmlFields):
     return view    
 
 def exportDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
+    # export a dataset
     result = True
     sourceTable = os.path.join(sourceWorkspace,sourceName)
     targetTable = os.path.join(workspace,targetName)
@@ -813,6 +859,7 @@ def exportDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
 
 
 def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
+    # import a dataset
     result = True
     sourceTable = os.path.join(sourceWorkspace,sourceName)
     targetTable = os.path.join(workspace,targetName)
@@ -857,6 +904,7 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     return result
 
 def deleteExistingRows(datasets):
+    # delete existing rows in a dataset
     for dataset in datasets:
         name = dataset.getAttributeNode("targetName").nodeValue
         table = os.path.join(workspace,name)
