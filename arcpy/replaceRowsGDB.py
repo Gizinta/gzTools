@@ -36,7 +36,7 @@ else:
     for dataset in datasets:
         name = dataset.getAttributeNode("name").nodeValue
         datasetNames.append(name.upper())
-
+        
 SUCCESS = 3 # parameter number for output success value
 gzSupport.startLog()
 
@@ -79,7 +79,7 @@ def main(argv = None):
             s = s + 1
     except:
         gzSupport.showTraceback()
-        arcpy.AddError("Error replacing rows")
+        arcpy.AddError(pymsg)
         success = False
         gzSupport.logDatasetProcess(name,"replaceRows",success)
 
