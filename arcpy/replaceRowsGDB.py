@@ -79,7 +79,7 @@ def main(argv = None):
             s = s + 1
     except:
         gzSupport.showTraceback()
-        arcpy.AddError(pymsg)
+        arcpy.AddError("Error replacing rows")
         success = False
         gzSupport.logDatasetProcess(name,"replaceRows",success)
 
