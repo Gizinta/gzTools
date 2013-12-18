@@ -44,9 +44,11 @@ def main(argv = None):
     # main function - list the source and target datasets, then delete rows/append where there is a match on non-prefixed name
     success = True
     try:
+        gzSupport.addMessage("Getting list of source Datasets from " + sourceGDB)
         sources = gzSupport.listDatasets(sourceGDB)
         sNames = sources[0]
         sFullNames = sources[1]
+        gzSupport.addMessage("Getting list of target Datasets from " + targetGDB)
         targets = gzSupport.listDatasets(targetGDB)
         tNames = targets[0]
         tFullNames = targets[1]
@@ -71,6 +73,7 @@ def main(argv = None):
                     gzSupport.logDatasetProcess(name,"replaceRows",retVal)
                     if retVal == False:
                         success = False
+                    gzSupport.cleanupGarbage()
                 else:
                     gzSupport.addMessage("Skipping "  + name)
             s = s + 1
