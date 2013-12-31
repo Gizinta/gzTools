@@ -2,8 +2,8 @@
 ## SG May, 2013
 ## Loop through the xml files in a folder and user wildcards and xml Gizinta node tests to only include the Gizinta xml files.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2014 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import os, sys, traceback, time, xml.dom.minidom, gzSupport, arcpy, re
 from xml.dom.minidom import Document
@@ -30,14 +30,14 @@ def main(argv = None):
     xmlStrSource = writeDocument(files,outputFileName)
     if xmlStrSource != "":
         success = True
-        
+
     arcpy.SetParameter(gzSupport.successParameterNumber, success)
     arcpy.ResetProgressor()
     gzSupport.closeLog()
     return
 
 def writeDocument(files,outputFileName):
-    
+
     xmlDoc = Document()
     root = xmlDoc.createElement('GizintaPlaylist')
     xmlDoc.appendChild(root)
@@ -54,9 +54,9 @@ def writeDocument(files,outputFileName):
     try:
         xmlStr = xmlDoc.toprettyxml()
         uglyXml = xmlDoc.toprettyxml(indent='	')
-        text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)    
+        text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
         prettyXml = text_re.sub('>\g<1></', uglyXml)
-        
+
         fHandle = open(outputFileName, 'w')
         fHandle.write(prettyXml)
         fHandle.close()
@@ -77,6 +77,6 @@ def getFiles(topFolder,wildcard):
           if (searchStrings[0] in currentFile) and fileName.endswith(searchStrings[1]):
                 fileList.append(currentFile)
     return fileList
-    
+
 if __name__ == "__main__":
     main()

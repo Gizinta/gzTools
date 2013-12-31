@@ -2,8 +2,8 @@
 ## SG September, 2012
 ## loop through the list of datasets in a workspace and delete everything
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2014 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import os, sys, traceback, xml.dom.minidom, arcpy, gzSupport
 
@@ -27,13 +27,14 @@ else:
     for dataset in datasets:
         name = dataset.getAttributeNode("name").nodeValue
         datasetNames.append(name.upper())
-        
+
 SUCCESS = 2 # parameter number for output success value
 gzSupport.startLog()
 
 def main(argv = None):
     # main function - list the datasets and delete rows
     success = True
+    gzSupport.workspace = sourceGDB
     try:
         names = gzSupport.listDatasets(sourceGDB)
         tNames = names[0]
@@ -44,17 +45,17 @@ def main(argv = None):
             arcpy.SetProgressorPosition(i)
             arcpy.SetProgressorLabel(" Deleting rows in " + name + "...")
             # for each full name
-            if len(datasetNames) == 0 or tNames[i].upper() in datasetNames:
+            if len(datasetNames) == 0 or gzSupport.nameTrimmer(name.upper()) in datasetNames:
                 retVal = doTruncate(name)
                 gzSupport.logDatasetProcess(name,"deleteRowsGDB",retVal)
                 if retVal == False:
                     success = False
             else:
-                gzSupport.addMessage("Skipping "  + tNames[i])
-            i += i
+                gzSupport.addMessage("Skipping "  + gzSupport.nameTrimmer(name))
+            i = i + i
     except:
         gzSupport.showTraceback()
-        gzSupport.addError(pymsg)
+        gzSupport.addError("Failed to delete rows")
         success = False
         gzSupport.logDatasetProcess(name,"deleteRowsGDB",success)
     finally:
@@ -74,6 +75,7 @@ def doTruncate(target):
             gzSupport.addMessage("Deleted")
     else:
         gzSupport.addMessage("Target: " + target + " does not exist")
+    gzSupport.cleanupGarbage()
     return success
 
 

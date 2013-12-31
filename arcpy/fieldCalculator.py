@@ -4,8 +4,8 @@
 # Description: Create new fields using the provided field name, type, etc. using the Gizinta.xml
 # Calculate values into that field based on source-target mappings.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc and the Regional Municipality of Waterloo
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2013 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import os, sys, traceback, time, arcpy,  xml.dom.minidom, gzSupport, myGizinta
 
@@ -26,19 +26,23 @@ def main(argv = None):
     success = True
     gzSupport.compressGDB(gzSupport.workspace)
     arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
+    tables = gzSupport.listDatasets(gzSupport.workspace)
+    tNames = tables[0]
+    tFullNames = tables[1]
+
     for dataset in datasets:
         arcpy.env.Workspace = gzSupport.workspace
         name = dataset.getAttributeNode("name").nodeValue
-        table = os.path.join(gzSupport.workspace,name)
+        table = gzSupport.getFullName(name,tNames,tFullNames)
         gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
         gzSupport.sourceNameField = dataset.getAttributeNode("sourceNameField").nodeValue
         if not arcpy.Exists(table):
             gzSupport.addError("Feature Class " + table + " does not exist, exiting")
-            arcpy.SetParameter(1, False)
+            arcpy.SetParameter(SUCCESS, False)
             return
         if not arcpy.TestSchemaLock(table):
             gzSupport.addError("Unable to obtain a schema lock for " + table + ", exiting")
-            arcpy.SetParameter(1, False)
+            arcpy.SetParameter(SUCCESS, False)
             return -1
         desc = arcpy.Describe(table)
         fields = dataset.getElementsByTagName("Field")
@@ -64,7 +68,7 @@ def main(argv = None):
             arcpy.RefreshCatalog(table)
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")        
+        gzSupport.addError("Errors occurred during process, look in log files for more information")
     if gzSupport.ignoreErrors == True:
         success = True
     arcpy.SetParameter(SUCCESS, success)
@@ -82,14 +86,14 @@ def calcValue(row,attrs,calcString):
     for strVal in calcList:
         if strVal in attrs:
             outVal += str(row.getValue(strVal))
-        else:    
+        else:
             outVal += strVal
     try:
         outVal = eval(outVal)
     except:
         gzSupport.addMessage("Error evaluating:" + outVal)
         gzSupport.showTraceback()
-        gzSupport.addError("Error calculating field values:" + outVal)    
+        gzSupport.addError("Error calculating field values:" + outVal)
     return outVal
 
 def setFieldValues(table,fields):
@@ -103,7 +107,7 @@ def setFieldValues(table,fields):
         msg = str(getTraceback(Exception, ErrorDesc)) # this is the old style, could update
         gzSupport.addMessage(msg[msg.find("Error Info:"):])
         row = None
-        
+
     valueMaps = gzSupport.getXmlElements(xmlDoc,"ValueMap")
     result = arcpy.GetCount_management(table)
     numFeat = int(result.getOutput(0))
@@ -114,7 +118,7 @@ def setFieldValues(table,fields):
         progressUpdate = int(numFeat/100)
     arcpy.SetProgressor("Step","Calculating " + table + "...",0,numFeat,progressUpdate)
     attrs = [f.name for f in arcpy.ListFields(table)]
-    
+
     if row is not None:
         success = True
         errCount = 0
@@ -205,7 +209,7 @@ def setFieldValues(table,fields):
                                             gzSupport.showTraceback()
                                             gzSupport.addError(err)
                                             gzSupport.logProcessError(row.getValue(gzSupport.sourceNameField),gzSupport.sourceIDField,row.getValue(gzSupport.sourceIDField),targetName,err)
-                                            
+
                     if not found:
                         if otherwise and str(otherwise) != "None":
                             otherwise = str(otherwise)
@@ -219,7 +223,7 @@ def setFieldValues(table,fields):
                             err = "Unable to find map value (otherwise) for " + str(targetName) + ", value = " + str(currentValue)
                             gzSupport.addError(err)
                             gzSupport.logProcessError(row.getValue(gzSupport.sourceNameField),gzSupport.sourceIDField,row.getValue(gzSupport.sourceIDField),targetName,err)
- 
+
                 elif method == "Copy":
                     if currentValue and currentValue != "":
                         row.setValue(targetName,currentValue)
@@ -246,7 +250,7 @@ def setFieldValues(table,fields):
                     #    err = "Blank or null value calculated: unable to set value for " + targetName + " " + str(calcString)
                     #    gzSupport.addError(err)
                     #    gzSupport.logProcessError(row.getValue(gzSupport.sourceNameField),gzSupport.sourceIDField,row.getValue(gzSupport.sourceIDField),targetName,err)
-                            
+
             try:
                 updateCursor.updateRow(row)
             except:
@@ -257,7 +261,7 @@ def setFieldValues(table,fields):
                 gzSupport.addError(err)
                 gzSupport.logProcessError(row.getValue(gzSupport.sourceNameField),gzSupport.sourceIDField,row.getValue(gzSupport.sourceIDField),"One of the values",err)
             row = updateCursor.next()
-            
+
     del updateCursor
     gzSupport.cleanupGarbage()
     arcpy.ResetProgressor()

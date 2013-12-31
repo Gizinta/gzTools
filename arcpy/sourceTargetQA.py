@@ -3,7 +3,7 @@
 # Created on: 2013-02-03 SG
 # Description: Run QA on source datasets using the SourceTargetMatrix.xml
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
+# Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 import os, sys, traceback, time, arcpy,  xml.dom.minidom, gzSupport
@@ -26,14 +26,19 @@ valueMaps = gzSupport.getXmlElements(xmlDoc,"ValueMap")
 def main(argv = None):
     success = True
     gzSupport.compressGDB(gzSupport.workspace)
+    tables = gzSupport.listDatasets(gzSupport.workspace)
+    tNames = tables[0]
+    tFullNames = tables[1]
+
     if len(datasets) > 0:
         progBar = len(datasets)
-        arcpy.SetProgressor("step", "Running QA...", 0,progBar, 1) 
+        arcpy.SetProgressor("step", "Running QA...", 0,progBar, 1)
     for dataset in datasets:
         arcpy.env.Workspace = gzSupport.workspace
         name = dataset.getAttributeNode("name").nodeValue
         gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
-        table = os.path.join(gzSupport.workspace,name)
+        table = gzSupport.getFullName(name,tNames, tFullNames)
+        #table = os.path.join(gzSupport.workspace,name)
         fields = dataset.getElementsByTagName("Field")
         try:
             # run qa for dataset
@@ -42,7 +47,7 @@ def main(argv = None):
             retVal = runDatasetChecks(dataset,table,qaRulesDataset)
             if retVal == False:
                 success = False
-            
+
             for field in fields:
                 sourceQA = False
                 targetQA = False
@@ -67,7 +72,7 @@ def main(argv = None):
             arcpy.RefreshCatalog(table)
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")        
+        gzSupport.addError("Errors occurred during process, look in log files for more information")
     if gzSupport.ignoreErrors == True:
         success = True
     arcpy.SetParameter(SUCCESS, success)
@@ -93,29 +98,35 @@ def runDatasetChecks(dataset,table,qaRulesDataset):
                 success = False
             else:
                 gzSupport.addMessage("Geometry successfully repaired")
-                
+
         elif rule == "CheckGeometry":
             gzSupport.addMessage("Running " + rule + " for " + table)
             count = checkGeometry(table)
             if count > 0:
                 success = False
                 gzSupport.logProcessError(table,rule,rule,str(count),"Geometry Errors Found")
-                
+
     return success
 
 def checkGeometry(table):
 
-    errTable = table + "_Check"
-    if arcpy.Exists(errTable):
-        arcpy.Delete_management(errTable)
-        gzSupport.addMessage("Deleted existing " + errTable)                
-    arcpy.CheckGeometry_management(table,errTable)
-    count = int(arcpy.GetCount_management(errTable).getOutput(0))
-    if count == 0:
-        gzSupport.addMessage("No Geometry Errors found")
-        arcpy.Delete_management(errTable)
-    else:
-        gzSupport.addMessage(str(count) + " Errors located in " + errTable)
+    try:
+        errTable = table + "_Check"
+        if arcpy.Exists(errTable):
+            arcpy.Delete_management(errTable)
+            gzSupport.addMessage("Deleted existing " + errTable)
+
+        arcpy.CheckGeometry_management(table,errTable)
+        count = int(arcpy.GetCount_management(errTable).getOutput(0))
+        if count == 0:
+            gzSupport.addMessage("No Geometry Errors found")
+            arcpy.Delete_management(errTable)
+        else:
+            gzSupport.addMessage(str(count) + " Errors located in " + errTable)
+    except:
+        gzSupport.showTraceback()
+        gzSupport.addMessage("Unable to perform geometry check, see error listed above")
+        count = 0
 
     return count
 

@@ -1,10 +1,11 @@
 # ---------------------------------------------------------------------------
 # ExtractLayerToGDB.py
 # Created on: 2013-05-06 SG
-# Description: Import a set of .lyr files to Geodatabase. 
+# rewritten in June 2013
+# Description: Import a set of .lyr files to Geodatabase.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2014 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import os, sys, traceback, time, arcpy, xml.dom.minidom, gzSupport
 
@@ -21,7 +22,7 @@ datasets = gzSupport.getDatasets(xmlDoc)
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
-            
+
 def main(argv = None):
     success = True
     try:
@@ -32,7 +33,7 @@ def main(argv = None):
             gzSupport.compressGDB(gzSupport.workspace)
         if len(datasets) > 0:
             progBar = len(datasets) + 1
-            arcpy.SetProgressor("step", "Importing Layers...", 0,progBar, 1) 
+            arcpy.SetProgressor("step", "Importing Layers...", 0,progBar, 1)
             arcpy.SetProgressorPosition()
         for dataset in datasets:
             gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
@@ -69,7 +70,7 @@ def main(argv = None):
         arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
 
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")        
+        gzSupport.addError("Errors occurred during process, look in log files for more information")
     if gzSupport.ignoreErrors == True:
         success = True
     gzSupport.closeLog()

@@ -9,7 +9,7 @@
 # 5. If any errors then delete the version
 # if the target workspace is a file gdb then do the same logic without a version
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
+# Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 import os, sys, traceback, time, arcpy,  xml.dom.minidom, gzSupport
@@ -41,7 +41,7 @@ try:
 except:
     versionName = None
     defaultVersionName = None
-    
+
 def main(argv = None):
     global targetWorkspace
     hasVersion = False
@@ -97,6 +97,8 @@ def main(argv = None):
                     gzSupport.logDatasetProcess(targetTable,sys.argv[0],retVal)
                 else:
                     gzSupport.logDatasetProcess(targetTable,sys.argv[0],retVal)
+                gzSupport.cleanupGarbage()
+
 
         except:
             gzSupport.showTraceback()
@@ -106,7 +108,7 @@ def main(argv = None):
             arcpy.SetProgressorPosition()
             arcpy.ClearWorkspaceCache_management(defaultWorkspace)
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")        
+        gzSupport.addError("Errors occurred during process, look in log files for more information")
     if gzSupport.ignoreErrors == True:
         success = True
     if desc.workspaceType == "RemoteDatabase" and success == True:
@@ -143,7 +145,7 @@ def getExpression(attrs,fieldNames,value):
             if i >= 1:
                 expr = expr + " OR "
             expr = expr + "\"" + name + "\"='" + str(value) + "'"
-            i += 1        
+            i += 1
 
     return expr
 

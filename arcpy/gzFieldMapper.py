@@ -1,8 +1,8 @@
 ## gzFieldMapper.py - set up xml document for field mapping on the gizinta website
 ## SG April, 2013
-## 
+##
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
+# Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 import os, sys, traceback, time, xml.dom.minidom, arcpy, gzSupport, urllib, webbrowser
@@ -55,7 +55,7 @@ def getDocument(dataset):
         baseName = desc.baseName[desc.baseName.rfind('.')+1:]
     else:
         baseName = desc.baseName
-        
+
     source = xmlDoc.createElement("data")
     source.setAttribute("name",baseName)
     root.appendChild(source)
@@ -65,7 +65,7 @@ def getDocument(dataset):
         for field in fields:
             fNode = xmlDoc.createElement("row")
             fNode.setAttribute("id",str(i))
-            source.appendChild(fNode)                
+            source.appendChild(fNode)
             addFieldElement(xmlDoc,fNode,"FieldName",field.name)
             addFieldElement(xmlDoc,fNode,"SourceField","")
             addFieldElement(xmlDoc,fNode,"SourceQA","Required") # need to get these values from template project.
@@ -79,7 +79,7 @@ def getDocument(dataset):
         gzSupport.showTraceback()
         xmlStr =""
     return xmlStr
-    
+
 
 def addFieldElement(xmlDoc,node,name,value):
     xmlName = xmlDoc.createElement("column")
@@ -99,7 +99,7 @@ def getFields(dataset):
     for field in arcpy.ListFields(dataset):
         if field.name not in ignore:
           fields.append(field)
-          
+
     return fields
 
 def getFieldExcept(desc,name):

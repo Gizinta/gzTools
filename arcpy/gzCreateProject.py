@@ -3,8 +3,8 @@
 ## Loop through the source and target datasets and write an xml document that can be used in the Gizinta online mapping tool
 ## or edited by hand
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2014 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import os, sys, traceback, time, xml.dom.minidom, arcpy, gzSupport, urllib, webbrowser
 from xml.dom.minidom import Document
@@ -28,7 +28,7 @@ def main(argv = None):
     xmlStrSource = writeDocument(sourceDataset,targetDataset,xmlFileName)
     if xmlStrSource != "":
         success = True
-        
+
     arcpy.SetParameter(gzSupport.successParameterNumber, success)
     arcpy.ResetProgressor()
     gzSupport.closeLog()
@@ -51,7 +51,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
     root.appendChild(extract)
 
     dataElementName = getExtractElementName(desc,sourceDataset)
-    
+
     source = xmlDoc.createElement(dataElementName)
     sourceName = getName(desc,sourceDataset)
     targetName = getName(descT,targetDataset)
@@ -59,7 +59,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
     where = xmlDoc.createElement("WhereClause")
     source.appendChild(where)
     extract.appendChild(source)
-    
+
     transform = xmlDoc.createElement("Transform")
     root.appendChild(transform)
 
@@ -69,7 +69,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
     dataset.setAttribute("qa","CheckFields,CheckGeometry")
     dataset.setAttribute("sourceIDField","")
     dataset.setAttribute("sourceNameField","")
-    
+
     fields = getFields(descT,targetDataset)
     sourceFields = getFields(desc,sourceDataset)
     sourceNames = [field.name[field.name.rfind(".")+1:] for field in sourceFields]
@@ -83,7 +83,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
                 addFieldElement(xmlDoc,fNode,"SourceName",fieldName)
             else:
                 addFieldElement(xmlDoc,fNode,"SourceName","*"+fieldName+"*")
-               
+
             addFieldElement(xmlDoc,fNode,"TargetName",fieldName)
             addFieldElement(xmlDoc,fNode,"Method","Copy")
             addFieldElement(xmlDoc,fNode,"FieldType",field.type)
@@ -91,12 +91,12 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
             i += 1
         setSourceFields(xmlDoc,dataset,sourceNames)
         # Should add a template section for value maps, maybe write domains...
-            
+
         xmlStr = xmlDoc.toprettyxml()
         uglyXml = xmlDoc.toprettyxml(indent='	')
-        text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)    
+        text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
         prettyXml = text_re.sub('>\g<1></', uglyXml)
-        
+
         fHandle = open(xmlFileName, 'w')
         fHandle.write(prettyXml)
         fHandle.close()
@@ -105,7 +105,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
         gzSupport.showTraceback()
         xmlStr =""
     return xmlStr
-    
+
 def getName(desc,dataset):
     if desc.baseName.find('.') > -1:
         baseName = desc.baseName[desc.baseName.rfind('.')+1:]
@@ -113,7 +113,7 @@ def getName(desc,dataset):
         baseName = desc.baseName
     if desc.dataElementType == "DEShapeFile":
         baseName = baseName + ".shp"
-    return baseName    
+    return baseName
 
 def setSourceFields(xmlDoc,dataset,sourceNames):
     sourceFieldsNode = xmlDoc.createElement("SourceFieldNames")
@@ -143,7 +143,7 @@ def getFields(desc,dataset):
     for field in arcpy.ListFields(dataset):
         if field.name[field.name.rfind(".")+1:] not in ignore:
             fields.append(field)
-          
+
     return fields
 
 def getFieldExcept(desc,name):
@@ -174,7 +174,7 @@ def setDefaultProperties(source,dataElementName,sourceDataset,sourceName,targetN
     elif dataElementName == "GDBDataset":
         source.setAttribute("sourceIDField","OBJECTID")
 
-    
+
 
 def getExtractElementName(desc,sourceDataset):
     deType = ""

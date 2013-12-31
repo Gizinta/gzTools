@@ -1,12 +1,13 @@
 # ---------------------------------------------------------------------------
 # ExtractCADToGDB.py
 # Created on: 2013-02-03 SG
+# rewritten: June 2013
 # Description: Import a set of CAD Drawings in a folder structure to Geodatabase. Join to .csv files that contain Identifiers and potentially other values.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc and Caltech Pasadena
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2014 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
-import os, sys, traceback, time, datetime as dt, arcpy,  xml.dom.minidom, gzSupport
+import os, sys, traceback, time, datetime, arcpy,  xml.dom.minidom, gzSupport
 
 gzSupport.xmlFileName = arcpy.GetParameterAsText(0) # xml file name as a parameter
 cadFolder = arcpy.GetParameterAsText(1) # Folder to scan for drawing files
@@ -22,7 +23,7 @@ rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
 cadExt = rootElem.getAttributeNode("fileExtension").nodeValue
-  
+
 def main(argv = None):
     success = True
     if not arcpy.Exists(gzSupport.workspace):
@@ -33,18 +34,18 @@ def main(argv = None):
     arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     try:
         gzSupport.addMessage("Looking for drawings modified since " + since)
-        minTime = dt.datetime.strptime(since,"%d/%m/%Y %I:%M:%S %p")
-        cadFiles = getFileList(cadFolder,cadExt,minTime)
+        minTime = datetime.datetime.strptime(since,"%d/%m/%Y %I:%M:%S %p")
+        cadFiles = gzSupport.getFileList(cadFolder,cadExt,minTime)
         if len(cadFiles) > 0:
             progBar = len(cadFiles) + 1
-            arcpy.SetProgressor("step", "Importing Drawings...", 0,progBar, 1) 
+            arcpy.SetProgressor("step", "Importing Drawings...", 0,progBar, 1)
             arcpy.SetProgressorPosition()
             gzSupport.deleteExistingRows(datasets)
         for item in cadFiles:
             cadPath = item[0]
             cadName = item[1]
             gzSupport.addMessage("Importing Drawing " + cadName)
-            
+
             for dataset in datasets:
                 try:
                     name = dataset.getAttributeNode("sourceName").nodeValue
@@ -53,7 +54,7 @@ def main(argv = None):
 
                 gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
                 xmlFields = gzSupport.getXmlElements(xmlDoc,"Field")
-                arcpy.SetProgressorLabel("Loading " + name + " for " + cadName + "...") 
+                arcpy.SetProgressorLabel("Loading " + name + " for " + cadName + "...")
                 arcpy.env.Workspace = gzSupport.workspace
                 targetName = dataset.getAttributeNode("targetName").nodeValue
                 sourceWorkspace = os.path.join(cadPath,cadName)
@@ -67,8 +68,10 @@ def main(argv = None):
                 try:
                     if not exists==True:
                         retVal = gzSupport.exportDataset(sourceWorkspace,name,targetName,dataset,xmlFields)
+                        addDrawingField(os.path.join(gzSupport.workspace,targetName),cadName)
                     else:
                         retVal = importLayer(cadPath,cadName,dataset)
+                        addDrawingField(os.path.join(gzSupport.workspace,targetName),cadName)
                     if retVal == False:
                         success = False
                 except:
@@ -92,7 +95,7 @@ def main(argv = None):
         gzSupport.cleanupGarbage()
 
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")        
+        gzSupport.addError("Errors occurred during process, look in log files for more information")
     if gzSupport.ignoreErrors == True:
         success = True
     gzSupport.closeLog()
@@ -104,7 +107,7 @@ def importLayer(cadPath,cadName,dataset):
         name = dataset.getAttributeNode("targetName").nodeValue
     except:
         name = dataset.getAttributeNode("name").nodeValue
-        
+
     table = os.path.join(gzSupport.workspace,name)
     layerName = dataset.getAttributeNode("sourceName").nodeValue
     layer = os.path.join(cadPath,cadName,layerName)
@@ -124,8 +127,8 @@ def importLayer(cadPath,cadName,dataset):
             view = layer
         count = arcpy.GetCount_management(view).getOutput(0)
         gzSupport.addMessage(str(count) + " source Features for " + name)
-                
-        if hasJoinTo(dataset) == True:            
+
+        if hasJoinTo(dataset) == True:
             res = joinToCsv(view,dataset,cadPath,cadName)
             result = res[0]
             view = res[1]
@@ -136,7 +139,7 @@ def importLayer(cadPath,cadName,dataset):
         if result == True and count > 0:
             arcpy.Append_management([view],table, "NO_TEST","","")
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
-       
+
     except:
         err = "Failed to import layer " + name
         gzSupport.addError(err)
@@ -151,7 +154,7 @@ def importLayer(cadPath,cadName,dataset):
 
 
 def hasJoinTo(dataset):
-    joinTo = True    
+    joinTo = True
     try:
         test = dataset.getAttributeNode("joinTo").nodeValue
     except:
@@ -198,21 +201,12 @@ def joinToCsv(view, dataset,cadPath,cadName):
 
     return [retVal,view]
 
-def getFileList(inputFolder,fileExt,minTime): # get a list of files - recursively
-    inputFiles = []
-    docList = os.listdir(inputFolder) #Get directory list for inputDirectory
-    for doc in docList:
-        docLow = doc.lower()
-        ffile = os.path.join(inputFolder,doc)
-        if docLow.endswith(fileExt.lower()):
-            t = os.path.getmtime(ffile)
-            modTime = dt.datetime.fromtimestamp(t)
-            if modTime > minTime:
-                inputFiles.append([inputFolder,doc])
-        elif os.path.isdir(ffile):
-            newFiles = getFileList(ffile,fileExt,minTime)
-            inputFiles = newFiles + inputFiles
-    return(inputFiles)
+def addDrawingField(table,dwgName):
+    fieldName = "DRAWING"
+    gzSupport.addField(table,"DRAWING","TEXT",50)
+    if dwgName.rfind(".dwg") > -1:
+        dwgName = dwgName[:dwgName.rfind(".dwg")]
+    arcpy.CalculateField_management(table,fieldName,"\"" + dwgName + "\"","PYTHON_9.3")
 
 if __name__ == "__main__":
     main()

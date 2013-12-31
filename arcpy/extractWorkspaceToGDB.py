@@ -1,9 +1,10 @@
 # ---------------------------------------------------------------------------
 # ExtractWorkspaceToGDB.py
 # Created on: 2013-02-03 SG
-# Description: Import a set of Datasets contained in a workspace to a Gizinta Geodatabase. 
+# rewritten in June-Sept 2013 to support playlists and additional workspaces as sources
+# Description: Import a set of Datasets contained in a workspace to a Gizinta Geodatabase.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc and the Regional Municipality of Waterloo
+# Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 import os, sys, traceback, time, datetime as dt, arcpy,  xml.dom.minidom, gzSupport
@@ -20,7 +21,7 @@ datasets = gzSupport.getXmlElements(xmlDoc,"GDBDataset")
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
-            
+
 def main(argv = None):
     success = True
     try:
@@ -31,7 +32,7 @@ def main(argv = None):
             gzSupport.compressGDB(gzSupport.workspace)
         if len(datasets) > 0:
             progBar = len(datasets) + 1
-            arcpy.SetProgressor("step", "Importing Datasets...", 0,progBar, 1) 
+            arcpy.SetProgressor("step", "Importing Datasets...", 0,progBar, 1)
             #gzSupport.deleteExistingRows(datasets)
             arcpy.SetProgressorPosition()
         for dataset in datasets:
@@ -74,10 +75,10 @@ def main(argv = None):
             gzSupport.addMessage("Unable to clear workspace cache, continuing")
 
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")        
+        gzSupport.addError("Errors occurred during process, look in log files for more information")
     if gzSupport.ignoreErrors == True:
         success = True
-        
+
     gzSupport.closeLog()
     arcpy.SetParameter(SUCCESS, success)
 

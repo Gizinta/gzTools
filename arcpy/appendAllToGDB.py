@@ -5,8 +5,8 @@
 ## This script compares on names with no prefix.
 ## NB This means if you have the same table name in multiple SDE databases/instances in the same connection this script won't work for you.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
-# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+# Copyright 2012-2014 Vertex3 Inc
+# This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import os, sys, traceback, xml.dom.minidom, arcpy, gzSupport
 
@@ -36,7 +36,7 @@ else:
     for dataset in datasets:
         name = dataset.getAttributeNode("name").nodeValue
         datasetNames.append(name.upper())
-        
+
 SUCCESS = 3 # parameter number for output success value
 gzSupport.startLog()
 
@@ -51,7 +51,7 @@ def main(argv = None):
         targets = gzSupport.listDatasets(targetGDB)
         tNames = targets[0]
         tFullNames = targets[1]
-        s = 0    
+        s = 0
         arcpy.SetProgressor("Step","Appending rows...",0,len(sFullNames),1)
         for name in sNames:
             arcpy.SetProgressorPosition(s)
@@ -67,13 +67,13 @@ def main(argv = None):
                 t = -1
             if t > -1:
                 # append if there is a match
-                if len(datasetNames) == 0 or name.upper() in datasetNames:
+                if len(datasetNames) == 0 or gzSupport.nameTrimmer(name) in datasetNames:
                     retVal = doAppend(sFullNames[s],tFullNames[t])
                     gzSupport.logDatasetProcess(name,"appendAlltoGDB",retVal)
                     if retVal == False:
                         success = False
                 else:
-                    gzSupport.addMessage("Skipping "  + name)
+                    gzSupport.addMessage("Skipping "  + gzSupport.nameTrimmer(name))
 
             s = s + 1
     except:
@@ -98,9 +98,10 @@ def doAppend(source,target):
             gzSupport.addMessage("completed")
     else:
         gzSupport.addMessage("Target: " + target + " does not exist")
+
+    gzSupport.cleanupGarbage()
     return success
 
 if __name__ == "__main__":
     main()
 
-    

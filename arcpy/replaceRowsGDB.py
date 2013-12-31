@@ -5,7 +5,7 @@
 ## This script compares on names with no prefix.
 ## NB This means if you have the same table name in multiple SDE databases/instances in the same connection this script won't work for you.
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
+# Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 import os, sys, traceback, xml.dom.minidom, arcpy, gzSupport
@@ -36,7 +36,7 @@ else:
     for dataset in datasets:
         name = dataset.getAttributeNode("name").nodeValue
         datasetNames.append(name.upper())
-        
+
 SUCCESS = 3 # parameter number for output success value
 gzSupport.startLog()
 
@@ -44,11 +44,9 @@ def main(argv = None):
     # main function - list the source and target datasets, then delete rows/append where there is a match on non-prefixed name
     success = True
     try:
-        gzSupport.addMessage("Getting list of source Datasets from " + sourceGDB)
         sources = gzSupport.listDatasets(sourceGDB)
         sNames = sources[0]
         sFullNames = sources[1]
-        gzSupport.addMessage("Getting list of target Datasets from " + targetGDB)
         targets = gzSupport.listDatasets(targetGDB)
         tNames = targets[0]
         tFullNames = targets[1]
@@ -68,14 +66,14 @@ def main(argv = None):
                 t = -1
             if t > -1:
                 # append if there is a match
-                if len(datasetNames) == 0 or name.upper() in datasetNames:
+                if len(datasetNames) == 0 or gzSupport.nameTrimmer(name) in datasetNames:
                     retVal = doInlineAppend(sFullNames[s],tFullNames[t])
                     gzSupport.logDatasetProcess(name,"replaceRows",retVal)
                     if retVal == False:
                         success = False
                     gzSupport.cleanupGarbage()
                 else:
-                    gzSupport.addMessage("Skipping "  + name)
+                    gzSupport.addMessage("Skipping "  + gzSupport.nameTrimmer(name))
             s = s + 1
     except:
         gzSupport.showTraceback()
@@ -104,6 +102,8 @@ def doInlineAppend(source,target):
     else:
         gzSupport.addMessage("Target: " + target + " does not exist")
         success = False
+
+    gzSupport.cleanupGarbage()
     return success
 
 if __name__ == "__main__":

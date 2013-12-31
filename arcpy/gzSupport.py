@@ -1,14 +1,14 @@
 # gzSupport - Common supporting functions
 # Feb 2013 SG
 # ---------------------------------------------------------------------------
-# Copyright 2012-2013 Vertex3 Inc
+# Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
-import sys,os,traceback,xml.dom.minidom,time,gc,arcpy,myGizinta
+import sys,os,traceback,xml.dom.minidom,time,datetime,gc,arcpy,myGizinta
 from xml.dom.minidom import Document
 
 debug = False
-log = [] # must be set by calling program with an open 
+log = [] # must be set by calling program with an open
 xmlFileName = os.path.join(sys.path[0],"Gizinta.xml") # this is a default setting
 startTime = time.localtime() # start time for a script
 ignoreErrors = False # default, can override in script
@@ -32,7 +32,7 @@ def startLog():
     startTime = timer(0)
     loadTime = getDBTime()
     openLog()
-    addMessage(loadTime)
+    addMessageLocal(loadTime)
     setupLogTables()
 
 def openLog():
@@ -45,8 +45,8 @@ def closeLog():
     # close the log file, write some messages and clean up
     global log
     endTime = timer(0)
-    addMessage(getDBTime())
-    addMessage("Processing time: " + ' (' + str(int(timer(startTime)/60)) + 'm ' + str(int(timer(startTime) % 60)) + 's)')
+    addMessageLocal(getDBTime())
+    addMessageLocal("Processing time: " + ' (' + str(int(timer(startTime)/60)) + 'm ' + str(int(timer(startTime) % 60)) + 's)')
     if log != [] and log != None:
         log.close()
     cleanupGarbage()
@@ -80,8 +80,22 @@ def getTimeFromStr(timeStr):
 def addMessage(val):
     # write a message to the screen and the log file
     global log
-    arcpy.AddMessage(str(val))
+    if sys.stdin.isatty():
+        arcpy.AddMessage(str(val))
+        print str(val)
+    else:
+        arcpy.AddMessage(str(val))
     logMessage(val)
+
+def addMessageLocal(val):
+    # write a message to the screen and the log file
+    global log
+    if sys.stdin.isatty():
+        print str(val)
+    else:
+        arcpy.AddMessage(str(val))
+    logMessage(val)
+
 
 def addError(val):
     # add an error to the screen output and log file
@@ -100,7 +114,7 @@ def logMessage(val):
             log.write(str(val) + "\n")
         except:
             arcpy.AddMessage("Unable to write to log file " + getLogFileName())
-    
+
 def strToBool(s):
     # return a boolean for values like 'true'
     return s.lower() in ("yes", "true", "t", "1")
@@ -112,7 +126,7 @@ def showTraceback():
     tbinfo = traceback.format_tb(tBack)
     tbStr = ""
     for i in range(0,len(tbinfo)):
-        tbStr = tbStr + str(tbinfo[i]) 
+        tbStr = tbStr + str(tbinfo[i])
     # concatenate information together concerning the error into a message string
     pymsg = "Python Error messages:\nTraceback Info:\n" + tbStr + "Error Info:    " + str(sys.exc_type)+ ": " + str(sys.exc_value) + "\n"
     # print messages for use in Python/PythonWin
@@ -166,7 +180,7 @@ def cleanupGarbage():
     del gc.garbage[:]
     for i in range(2):
         if debug == True:
-            addMessage('cleanup pass: ' + str(i))
+            addMessageLocal('cleanup pass: ' + str(i))
         n = gc.collect()
         if debug == True:
             print('Unreachable objects:' + str(n))
@@ -192,8 +206,8 @@ def getWorkspacePath(path):
             workspace = arcpy.Describe(datasetStr) # use the next level up from feature dataset
     except:
         workspace = dataset # use the first dataset, datasetType fails on workspace values
-      
-    return workspace    
+
+    return workspace
 
 def getCleanName(nameVal):
     # strip leading database prefix values
@@ -212,10 +226,10 @@ def makeFeatureView(workspace,sourceFC,viewName,whereClause,xmlFields):
         fields = arcpy.ListFields(sourceFC)
         fStr = getViewString(fields,xmlFields)
         arcpy.MakeFeatureLayer_management(sourceFC, viewName , whereClause, workspace, fStr)
-        #addMessage("Feature Layer " + viewName + " created for " + str(whereClause))
+        #addMessageLocal("Feature Layer " + viewName + " created for " + str(whereClause))
     else:
         addError(sourceFC + " does not exist, exiting")
-        
+
     if not arcpy.Exists(viewName):
         exit(-1)
     return(viewName)
@@ -231,7 +245,7 @@ def makeTableView(workspace,sourceTable,viewName,whereClause,xmlfield):
         arcpy.MakeTableView_management(sourceTable, viewName , whereClause, workspace, fStr)
     else:
         addError(sourceFC + " does not exist, exiting")
-        
+
     if not arcpy.Exists(viewName):
         exit(-1)
     return(viewName)
@@ -248,7 +262,7 @@ def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause,xmlFields
         arcpy.MakeFeatureLayer_management(sourceLayer, viewName, whereClause, workspace,fLayerStr)
     else:
         addError(sourceFC + " does not exist, exiting")
-        
+
     if not arcpy.Exists(viewName):
         exit(-1)
     return(viewName)
@@ -256,7 +270,7 @@ def makeFeatureViewForLayer(workspace,sourceLayer,viewName,whereClause,xmlFields
 def getViewString(fields,xmlFields):
     # get the string for creating a view
     viewStr = ""
-    for field in fields: # drop any field prefix from the source layer (happens with map joins)  
+    for field in fields: # drop any field prefix from the source layer (happens with map joins)
         thisFieldName = field.name[field.name.rfind(".")+1:]
         for xmlField in xmlFields:
             sourcename = getNodeValue(xmlField,"SourceName")
@@ -266,8 +280,8 @@ def getViewString(fields,xmlFields):
                     # this is a special case where the source name is different case but the same string as the target
                     # need to create table so that the name matches the target name so there is no conflict later
                     thisFieldName = targetname
-            
-        thisFieldStr = field.name + " " + thisFieldName + " VISIBLE NONE;" 
+
+        thisFieldStr = field.name + " " + thisFieldName + " VISIBLE NONE;"
         viewStr += thisFieldStr
 
     return viewStr
@@ -277,7 +291,7 @@ def deleteRows(workspace,fClassName,expr):
     arcpy.env.workspace = workspace # keep setting the workspace to force load activities
     tableName = workspace + os.sep + fClassName
     if debug:
-        addMessage(tableName)
+        addMessageLocal(tableName)
     retcode = False
     if arcpy.Exists(tableName):
         viewName = fClassName + "_View"
@@ -286,29 +300,29 @@ def deleteRows(workspace,fClassName,expr):
 
         arcpy.MakeTableView_management(tableName, viewName ,  expr)
         arcpy.DeleteRows_management(viewName)
-        addMessage("Existing " + fClassName + " rows deleted ")
+        addMessageLocal("Existing " + fClassName + " rows deleted ")
         try:
             arcpy.Delete_management(viewName) # delete view if it exists
         except:
-            addMessage("Could not delete view, continuing...")
+            addMessageLocal("Could not delete view, continuing...")
         retcode = True
     else:
-        addMessage( "Feature class " + fClassName + " does not exist, skipping " + fClassName)
+        addMessageLocal( "Feature class " + fClassName + " does not exist, skipping " + fClassName)
         retcode = False
     return retcode
 
 def appendRows(sourceTable,targetTable,expr):
-    # append rows in feature class with a where clause 
+    # append rows in feature class with a where clause
     arcpy.env.Workspace = workspace
     if debug:
-        addMessage(tableName)
+        addMessageLocal(tableName)
     retcode = False
     targTable = targetTable[targetTable.rfind("\\")+1:]
     sTable = sourceTable[sourceTable.rfind("\\")+1:]
     viewName = sTable + "_View"
     viewName = makeFeatureView(workspace,sourceTable,viewName,expr,[])
     arcpy.Append_management(viewName,targetTable,"NO_TEST")
-    addMessage(targTable + " rows Appended ")
+    addMessageLocal(targTable + " rows Appended ")
     retcode = True
 
     return retcode
@@ -318,15 +332,15 @@ def logDatasetProcess(loadName,dataset,status):
     logTable = os.path.join(workspace,logTableName)
     retcode = False
     if not arcpy.Exists(logTable):
-        addMessage(logTable + " does not exist, exiting")
+        addMessageLocal(logTable + " does not exist, exiting")
         retcode = False
     else:
         procName = sys.argv[0][sys.argv[0].rfind(os.sep)+1:sys.argv[0].find(".py")]
         userName = os.getenv('USERNAME')
-        
+
         insertCursor = arcpy.InsertCursor(logTable)
         if debug:
-            addMessage("Inserting into " +  logTable)
+            addMessageLocal("Inserting into " +  logTable)
 
         insRow = insertCursor.newRow()
         insRow.setValue("PROCNAME",procName)
@@ -338,7 +352,7 @@ def logDatasetProcess(loadName,dataset,status):
         insRow.setValue("ACTIVEFLAG","Y")
         try:
             insertCursor.insertRow(insRow)
-            addMessage("Row inserted into Log table")
+            addMessageLocal("Row inserted into Log table")
             retcode = True
         except:
             showTraceback()
@@ -350,7 +364,7 @@ def logDatasetProcess(loadName,dataset,status):
             message += "LOADUSER:" + str(userName) + "\n"
             message += "LOADTIME:" + str(getDBTime()) + "\n"
             message += "ACTIVEFLAG:" + "Y"
-            addMessage(message)
+            addMessageLocal(message)
         del insertCursor
     return retcode
 
@@ -360,16 +374,16 @@ def logProcessError(sourceName,sourceIDField,sourceIDValue,dataset,reason):
     errTable = os.path.join(workspace,errorTableName)
     retcode = False
     if not arcpy.Exists(errTable):
-        addMessage(errTable + " does not exist, exiting")
+        addMessageLocal(errTable + " does not exist, exiting")
         retcode = False
     else:
         procName = sys.argv[0][sys.argv[0].rfind(os.sep)+1:sys.argv[0].find(".py")]
         sourceName = sourceName[sourceName.rfind(os.sep)+1:]
         userName = os.getenv('USERNAME')
-        
+
         insertCursor = arcpy.InsertCursor(errTable)
         if debug:
-            addMessage("Inserting into " +  errTable)
+            addMessageLocal("Inserting into " +  errTable)
 
         insRow = insertCursor.newRow()
         insRow.setValue("PROCNAME",procName)
@@ -383,7 +397,7 @@ def logProcessError(sourceName,sourceIDField,sourceIDValue,dataset,reason):
         insRow.setValue("ACTIVEFLAG","Y")
         try:
             insertCursor.insertRow(insRow)
-            addMessage("Row inserted into Error table")
+            addMessageLocal("Row inserted into Error table")
             retcode = True
         except:
             showTraceback()
@@ -396,10 +410,10 @@ def logProcessError(sourceName,sourceIDField,sourceIDValue,dataset,reason):
             message += "ERRUSER:" + str(userName) + "\n"
             message += "ERRTIME:" + str(getDBTime()) + "\n"
             message += "ACTIVEFLAG:" + "Y"
-            addMessage(message)
-            
+            addMessageLocal(message)
+
         del insertCursor
-        
+
     return retcode
 
 
@@ -412,19 +426,19 @@ def deleteLogRows(mode,tableName):
             msg = "Existing rows flagged as inactive: "
         except:
             msg = "Error: Unable to flag rows as inactive: "
-            
+
     else:
         try:
             arcpy.DeleteRows_management(table)
             msg = "Existing rows deleted: "
         except:
             msg = "Error: Unable to delete existing rows: "
-    addMessage(msg + tableName)
+    addMessageLocal(msg + tableName)
 
 def deleteLogTableRows(mode):
     # delete from gzlog
     deleteLogRows(mode,logTableName)
-    
+
 def deleteErrorTableRows(mode):
     # delete from gzError
     deleteLogRows(mode,errorTableName)
@@ -435,33 +449,33 @@ def createVersion(sde,defaultVersion,versionName):
     loc = versionName.find(".")
     if loc > -1:
         versionName = versionName.split(".")[1]
-    addMessage("Creating Version: " + versionName)
+    addMessageLocal("Creating Version: " + versionName)
     try:
         retcode = arcpy.CreateVersion_management(sde, defaultVersion, versionName, "PRIVATE")
         if debug == True:
-            addMessage("create version " + str(retcode))
+            addMessageLocal("create version " + str(retcode))
     except:
         if debug == True:
-            addMessage("create version exception: " + str(retcode))
+            addMessageLocal("create version exception: " + str(retcode))
         retcode = False # have to assume this means it exists already
         try: # but try to change it to check
             retcode = arcpy.AlterVersion_management(sde, versionName, "", "Version for Data loading", "PRIVATE")
             if debug == True:
-                addMessage("alter version " + str(retcode))
-            #addMessage "Alter version succeeded"
+                addMessageLocal("alter version " + str(retcode))
+            #addMessageLocal "Alter version succeeded"
         except:
-            addMessage("Create version failed - please try to manually delete any existing version in ArcCatalog")
-            addMessage("Error: " + str(sys.exc_value))
+            addMessageLocal("Create version failed - please try to manually delete any existing version in ArcCatalog")
+            addMessageLocal("Error: " + str(sys.exc_value))
             retcode = False # if we can't change it the version probably doesn't exist
             if debug == True:
-                addMessage("except: alter version (doesn't exist) " + str(retcode))            
+                addMessageLocal("except: alter version (doesn't exist) " + str(retcode))
             exit(-1)
-            
+
     if retcode != False: # this means that the create version call returned a value
         retcode = True
     if debug == True:
-        addMessage("final retcode " + str(retcode))
-    return retcode 
+        addMessageLocal("final retcode " + str(retcode))
+    return retcode
 
 def changeVersion(tableName,versionName):
     # change to a new version in the database
@@ -470,62 +484,63 @@ def changeVersion(tableName,versionName):
         arcpy.ChangeVersion_management(tableName,"TRANSACTIONAL",versionName)
         retVal = True
     except:
-        addMessage("Failed to change version: " + tableName + ", " + versionName)
+        addMessageLocal("Failed to change version: " + tableName + ", " + versionName)
     return retVal
- 
+
 def deleteVersion(sde,versionName):
     # delete a version from the database
-    addMessage("Deleting Version...")
+    addMessageLocal("Deleting Version...")
     retcode = False
     if versionName.split(".")[0] == versionName:
         # default to DBO
         versionName = "DBO." + versionName
     if debug == True:
-        addMessage(sde + "|" + versionName)
+        addMessageLocal(sde + "|" + versionName)
     try:
         try:
             retcode = arcpy.DeleteVersion_management(sde, versionName)
         except:
-            retcode = arcpy.DeleteVersion_management(sde, versionName)           
+            retcode = arcpy.DeleteVersion_management(sde, versionName)
         if debug == True:
-            addMessage(versionName + " version deleted")
+            addMessageLocal(versionName + " version deleted")
         retcode = True
     except:
         retcode = False
-        #addMessage("Error: " + str(sys.exc_value))
-        #addMessage(versionName + " version not deleted... Please delete manually in ArcCatalog")
+        #addMessageLocal("Error: " + str(sys.exc_value))
+        #addMessageLocal(versionName + " version not deleted... Please delete manually in ArcCatalog")
         #exit(-1)
     return retcode
 
 def reconcilePost(sdeDefault,versionName,defaultVersion):
     # reconcile and post a version
-    addMessage("Reconcile and Post Version... ")
+    addMessageLocal("Reconcile and Post Version... ")
 
     if versionName.split(".")[0] == versionName:
         # default to DBO
-        versionName = "DBO." + versionName    
+        versionName = "DBO." + versionName
     retcode = False
 
-    addMessage("Reconciling " + versionName + "..." )
+    addMessageLocal("Reconciling " + versionName + "..." )
     try:
         retcode = arcpy.ReconcileVersion_management(sdeDefault, versionName, defaultVersion , "BY_OBJECT", "FAVOR_TARGET_VERSION", "LOCK_ACQUIRED", "NO_ABORT", "POST")
         if str(retcode) == sdeDefault:
             retcode = True
         else:
-            addMessage("Unexpected result: " + str(retcode) + ", continuing...")
+            addMessageLocal("Unexpected result: " + str(retcode) + ", continuing...")
             retcode = True
     except:
-            addMessage("Reconcile failed: \n" + str(retcode) + "\n" + sdeDefault)
+            addMessageLocal("Reconcile failed: \n" + str(retcode) + "\n" + sdeDefault)
             retcode = False
     arcpy.env.workspace = sdeDefault
     arcpy.ClearWorkspaceCache_management(sdeDefault)
     return retcode
-    
+
 def listDatasets(gdb):
-    # list all of the datasets and tables 
+    # list all of the datasets and tables
     dsNames = []
     dsFullNames = []
     arcpy.env.workspace = gdb
+    addMessageLocal("Getting list of Datasets from " + gdb)
     wsDatasets = arcpy.ListDatasets()
     wsTables = arcpy.ListTables()
     if wsDatasets:
@@ -540,7 +555,7 @@ def listDatasets(gdb):
                         dsNames.append(nameTrimmer(fc))
                         dsFullNames.append(desc.CatalogPath + os.sep + fc)
                         if debug:
-                            arcpy.AddMessage(desc.CatalogPath + os.sep + fc)    
+                            arcpy.AddMessage(desc.CatalogPath + os.sep + fc)
             arcpy.env.workspace = gdb
 
     arcpy.env.workspace = gdb
@@ -561,13 +576,13 @@ def listDatasets(gdb):
             dsFullNames.append(gdb + os.sep + table)
             if debug:
                 arcpy.AddMessage(gdb + os.sep + table)
-                
+
     return([dsNames,dsFullNames])
-    
+
 def getFullName(searchName,names,fullNames):
     # find full name for searchName string
     try:
-        # look for the matching name in target names 
+        # look for the matching name in target names
         t = names.index(searchName.upper())
         fullName = fullNames[t]
         return fullName
@@ -575,7 +590,7 @@ def getFullName(searchName,names,fullNames):
         # will get here if no match
         t = -1
 
-    return ""    
+    return ""
 
 def nameTrimmer(name):
     # trim any database prefixes from table names
@@ -583,7 +598,7 @@ def nameTrimmer(name):
         return name.split(".")[name.count(".")].upper()
     else:
         return name.upper()
-    
+
 def getFieldValues(mode,fields,datasets):
     # get a list of field values, returns all values and the unique values.
     theValues = [] # unique list of values
@@ -600,16 +615,16 @@ def getFieldValues(mode,fields,datasets):
             msg = str(getTraceback(Exception, ErrorDesc))
             printMsg(msg[msg.find("Error Info:"):])
             row = None
-            
+
         numFeat = int(arcpy.GetCount_management(table).getOutput(0))
-        addMessage(table + ", " + str(numFeat) + " (get " + mode + ") features")
+        addMessageLocal(table + ", " + str(numFeat) + " (get " + mode + ") features")
         progressUpdate = 1
         i=0
         if numFeat > 100:
             progressUpdate = numFeat/100
         arcpy.SetProgressor("Step","Getting " + mode + " values...",0,numFeat,progressUpdate)
         attrs = [f.name for f in arcpy.ListFields(table)]
-        
+
         if row is not None:
             while row:
                 i += 1
@@ -635,10 +650,10 @@ def getFieldValues(mode,fields,datasets):
                     theValues = []
 
                 row = cursor.next()
-                
+
         del cursor
         arcpy.RefreshCatalog(table)
-    
+
     return [theValues,theDiff]
 
 def addGizintaField(table,targetName,field,attrs):
@@ -653,14 +668,14 @@ def addGizintaField(table,targetName,field,attrs):
     else:
         fieldProperties = fieldProps.split(",")
 
-    addMessage("Field " + targetName)
+    addMessageLocal("Field " + targetName)
     try:
         attrs.index(targetName)
         retcode = True
     except:
         try:
             table = table.replace("\\","\\\\")
-            callStr = "arcpy.AddField_management('" + table + "','" + targetName + "'" 
+            callStr = "arcpy.AddField_management('" + table + "','" + targetName + "'"
             for prop in fieldProperties:
                 callStr = callStr + ",'" +  str(prop) + "'"
             callStr = callStr + ")"
@@ -669,11 +684,11 @@ def addGizintaField(table,targetName,field,attrs):
         except :
             showTraceback()
             fields = arcpy.ListFields(table)
-            for field in fields: # drop any field prefix from the source layer (happens with map joins)  
+            for field in fields: # drop any field prefix from the source layer (happens with map joins)
                 thisFieldName = field.name[field.name.rfind(".")+1:]
                 if thisFieldName.upper() == targetName.upper():
-                    addMessage("WARNING: Existing field name '" + thisFieldName + "' conflicts with new field name '" + targetName + "'. Identical names with different case are not supported by databases!\n")             
-    return 
+                    addMessageLocal("WARNING: Existing field name '" + thisFieldName + "' conflicts with new field name '" + targetName + "'. Identical names with different case are not supported by databases!\n")
+    return
 
 def addField(table,fieldName,fieldType,fieldLength):
     # add a field to a Geodatabase
@@ -685,7 +700,7 @@ def addField(table,fieldName,fieldType,fieldLength):
         retcode = True
     except:
         showTraceback()
-        
+
     return retcode
 
 def setupLogTables():
@@ -695,7 +710,7 @@ def setupLogTables():
     else:
         logTableFull = logTableName
         logTable = logTable[rfind(os.sep)+1:]
-        
+
     if errorTableName.rfind(os.sep) == -1:
         errorTableFull = os.path.join(workspace,errorTableName)
     else:
@@ -712,10 +727,10 @@ def setupLogTables():
             addField(logTableFull,"COMPLETED","SHORT","")
             addField(logTableFull,"LOADUSER","TEXT",50)
             addField(logTableFull,"ACTIVEFLAG","TEXT",3)
-            addMessage(logTableName + " Created")
+            addMessageLocal(logTableName + " Created")
         except:
             msg = "Failed to Create " + logTableName
-            
+
     if not arcpy.Exists(errorTableFull):
         try:
             arcpy.CreateTable_management(workspace,errorTableName)
@@ -728,7 +743,7 @@ def setupLogTables():
             addField(errorTableFull,"ERRUSER","TEXT",50)
             addField(errorTableFull,"ERRTIME","DATE","")
             addField(errorTableFull,"ACTIVEFLAG","TEXT",3)
-            addMessage(errorTableName + " Created")
+            addMessageLocal(errorTableName + " Created")
         except:
             msg = "Failed to Create " + errorTableName
 
@@ -740,12 +755,12 @@ def createGizintaGeodatabase():
     try:
         arcpy.CreateFileGDB_management(folder,fgdb)
         retcode = True
-        addMessage("New Gizinta Geodatabase created: " + workspace)
+        addMessageLocal("New Gizinta Geodatabase created: " + workspace)
     except:
         showTraceback()
-        addMessage("Unable to create Gizinta Geodatabase: " + folder + "\\" + fgdb)
+        addMessageLocal("Unable to create Gizinta Geodatabase: " + folder + "\\" + fgdb)
     return retcode
-                   
+
 def checkXmlSettings(xmlFile,sources,targets):
     # not implemented, could check all XML settings
     retVal = True
@@ -763,7 +778,7 @@ def isGizintaDocument(xmlDoc):
     else:
        retVal = False
     return retVal
-    
+
 def isPlaylistDocument(xmlDoc):
     # Is the first node a Gizinta Playlist?
     PlaylistNode = None
@@ -776,7 +791,7 @@ def isPlaylistDocument(xmlDoc):
     else:
        retVal = False
     return retVal
-    
+
 def getRootElement(xmlDoc):
     # get the root element
     retDoc = None
@@ -806,10 +821,10 @@ def getXmlElements(xmlDoc,elemName):
                     for node in xmlNodes:
                         retDoc.append(node)
             else:
-                addMessage(theFile + " does not exist, continuing...")
+                addMessageLocal(theFile + " does not exist, continuing...")
     else:
         retDoc = None
-    return retDoc  
+    return retDoc
 
 def convertDataset(dataElementType,sourceTable,workspace,targetName,whereClause):
     # convert a dataset
@@ -827,15 +842,15 @@ def makeView(deType,workspace,sourceTable,viewName,whereClause, xmlFields):
     if deType == "DEFeatureClass":
         view = makeFeatureView(workspace,sourceTable,viewName, whereClause, xmlFields)
 
-    return view    
+    return view
 
 def exportDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     # export a dataset
     result = True
     sourceTable = os.path.join(sourceWorkspace,sourceName)
     targetTable = os.path.join(workspace,targetName)
-    addMessage("Exporting dataset " + sourceTable)
-    
+    addMessageLocal("Exporting dataset " + sourceTable)
+
     try:
         try:
             whereClause = getNodeValue(dataset,"WhereClause")
@@ -844,11 +859,11 @@ def exportDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
         desc = arcpy.Describe(sourceTable)
         deType = desc.dataElementType
         if whereClause != '':
-            addMessage("Where " + whereClause)
+            addMessageLocal("Where " + whereClause)
         viewName = sourceName + "_View"
         view = makeView(deType,workspace,sourceTable,viewName, whereClause,xmlFields)
         count = arcpy.GetCount_management(view).getOutput(0)
-        addMessage(str(count) + " source rows")
+        addMessageLocal(str(count) + " source rows")
         convertDataset(deType,view,workspace,targetName,whereClause)
     except:
         err = "Failed to create new dataset " + targetName
@@ -863,14 +878,14 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     result = True
     sourceTable = os.path.join(sourceWorkspace,sourceName)
     targetTable = os.path.join(workspace,targetName)
-    addMessage("Importing dataset " + sourceTable)
+    addMessageLocal("Importing dataset " + sourceTable)
 
     try:
         try:
             whereClause = getNodeValue(dataset,"WhereClause")
         except:
             whereClause = ''
-        
+
         if not arcpy.Exists(sourceTable):
             err = sourceTable + " does not exist"
             addError(err)
@@ -885,17 +900,17 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
         desc = arcpy.Describe(sourceTable)
         deType = desc.dataElementType
         if whereClause != '':
-            addMessage("Where " + whereClause)
+            addMessageLocal("Where " + whereClause)
         viewName = sourceName + "_View"
         view = makeView(deType,workspace,sourceTable,viewName, whereClause, xmlFields)
         count = arcpy.GetCount_management(view).getOutput(0)
-        addMessage(str(count) + " source rows")
+        addMessageLocal(str(count) + " source rows")
         arcpy.Append_management([view],targetTable, "NO_TEST","","")
         #else:
         #    count = arcpy.GetCount_management(sourceTable).getOutput(0)
-        #    addMessage(str(count) + " source rows")
+        #    addMessageLocal(str(count) + " source rows")
         #    arcpy.Append_management([sourceTable],targetTable, "NO_TEST","","")
-            
+
     except:
         err = "Failed to import layer " + targetName
         addError(err)
@@ -910,9 +925,9 @@ def deleteExistingRows(datasets):
         table = os.path.join(workspace,name)
         if arcpy.Exists(table):
             arcpy.DeleteRows_management(table)
-            addMessage("Rows deleted from: " + name)
+            addMessageLocal("Rows deleted from: " + name)
         else:
-            addMessage(table + " does not exist")
+            addMessageLocal(table + " does not exist")
 
 
 def compressGDB(workspace):
@@ -921,16 +936,37 @@ def compressGDB(workspace):
     desc = arcpy.Describe(workspace)
     if desc.workspaceType == "RemoteDatabase":
         try:
-            addMessage("Database Compress...")
-            arcpy.Compress_management(defaultWorkspace)
+            addMessageLocal("Database Compress...")
+            arcpy.Compress_management(workspace)
             retVal = True
         except:
-            addMessage("Database Compress failed, continuing")
+            addMessageLocal("Database Compress failed, continuing")
     elif desc.workspaceType == "LocalDatabase":
         try:
-            addMessage("Database Compact...")
+            addMessageLocal("Database Compact...")
             arcpy.Compact_management(workspace)
             retVal = True
         except:
-            addMessage("Local Database Compact failed, continuing")
+            addMessageLocal("Local Database Compact failed, continuing")
     return retVal
+
+def getFileList(inputFolder,fileExt,minTime): # get a list of files - recursively
+    inputFiles = []
+    if inputFolder.lower().endswith(".dwg") == True: # if the arg is a file instead of a folder just get that as a list
+        inputFiles.append([os.path.dirname(inputFolder), os.path.basename(inputFolder)])
+        addMessageLocal(os.path.dirname(inputFolder))
+        addMessageLocal(os.path.basename(inputFolder))
+        return inputFiles
+    docList = os.listdir(inputFolder) #Get directory list for inputDirectory
+    for doc in docList:
+        docLow = doc.lower()
+        ffile = os.path.join(inputFolder,doc)
+        if docLow.endswith(fileExt.lower()):
+            t = os.path.getmtime(ffile)
+            modTime = datetime.datetime.fromtimestamp(t)
+            if modTime > minTime:
+                inputFiles.append([inputFolder,doc])
+        elif os.path.isdir(ffile):
+            newFiles = getFileList(ffile,fileExt,minTime)
+            inputFiles = newFiles + inputFiles
+    return(inputFiles)
