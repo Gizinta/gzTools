@@ -80,22 +80,27 @@ def getTimeFromStr(timeStr):
 def addMessage(val):
     # write a message to the screen and the log file
     global log
-    if sys.stdin.isatty():
-        arcpy.AddMessage(str(val))
-        print str(val)
-    else:
+    try:
+        if sys.stdin.isatty():
+            arcpy.AddMessage(str(val))
+            print str(val)
+        else:
+            arcpy.AddMessage(str(val))
+    except:
         arcpy.AddMessage(str(val))
     logMessage(val)
 
 def addMessageLocal(val):
     # write a message to the screen and the log file
     global log
-    if sys.stdin.isatty():
-        print str(val)
-    else:
+    try:
+        if sys.stdin.isatty():
+            print(str(val))
+        else:
+            arcpy.AddMessage(str(val))
+    except:
         arcpy.AddMessage(str(val))
     logMessage(val)
-
 
 def addError(val):
     # add an error to the screen output and log file
@@ -285,6 +290,19 @@ def getViewString(fields,xmlFields):
         viewStr += thisFieldStr
 
     return viewStr
+
+def getWhereClause(dataset):
+    whereClause = ''
+    try:
+        whereClause = getNodeValue(dataset,"WhereClause")
+    except:
+        whereClause = ''
+    if whereClause != '' and whereClause != '' and whereClause != None:
+        addMessageLocal("Where \"" + whereClause + "\"")
+    else:
+        addMessageLocal("No Where Clause")
+
+    return whereClause
 
 def deleteRows(workspace,fClassName,expr):
     # delete rows in feature class
@@ -852,14 +870,9 @@ def exportDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     addMessageLocal("Exporting dataset " + sourceTable)
 
     try:
-        try:
-            whereClause = getNodeValue(dataset,"WhereClause")
-        except:
-            whereClause = ''
         desc = arcpy.Describe(sourceTable)
         deType = desc.dataElementType
-        if whereClause != '':
-            addMessageLocal("Where " + whereClause)
+        whereClause = getWhereClause(dataset)
         viewName = sourceName + "_View"
         view = makeView(deType,workspace,sourceTable,viewName, whereClause,xmlFields)
         count = arcpy.GetCount_management(view).getOutput(0)
@@ -881,11 +894,7 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
     addMessageLocal("Importing dataset " + sourceTable)
 
     try:
-        try:
-            whereClause = getNodeValue(dataset,"WhereClause")
-        except:
-            whereClause = ''
-
+        whereClause = getWhereClause(dataset)
         if not arcpy.Exists(sourceTable):
             err = sourceTable + " does not exist"
             addError(err)
@@ -896,20 +905,13 @@ def importDataset(sourceWorkspace,sourceName,targetName,dataset,xmlFields):
             addError(err)
             logProcessError(targetTable,sourceIDField,sourceName,targetName,err)
             return False
-        #if whereClause != '':
         desc = arcpy.Describe(sourceTable)
         deType = desc.dataElementType
-        if whereClause != '':
-            addMessageLocal("Where " + whereClause)
         viewName = sourceName + "_View"
         view = makeView(deType,workspace,sourceTable,viewName, whereClause, xmlFields)
         count = arcpy.GetCount_management(view).getOutput(0)
         addMessageLocal(str(count) + " source rows")
         arcpy.Append_management([view],targetTable, "NO_TEST","","")
-        #else:
-        #    count = arcpy.GetCount_management(sourceTable).getOutput(0)
-        #    addMessageLocal(str(count) + " source rows")
-        #    arcpy.Append_management([sourceTable],targetTable, "NO_TEST","","")
 
     except:
         err = "Failed to import layer " + targetName
