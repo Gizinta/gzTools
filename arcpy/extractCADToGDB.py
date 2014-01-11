@@ -115,6 +115,7 @@ def importLayer(cadPath,cadName,dataset):
 
     try:
         whereClause = gzSupport.getNodeValue(dataset,"WhereClause")
+        xmlFields = dataset.getElementsByTagName("Field")
         gzSupport.addMessage("Where " + whereClause)
         if not arcpy.Exists(table):
             err = "Feature Class " + name + " does not exist"
@@ -122,7 +123,7 @@ def importLayer(cadPath,cadName,dataset):
             gzSupport.logProcessError(cadName,gzSupport.sourceIDField,name,name,err)
             return False
         if whereClause != '':
-            view = gzSupport.makeFeatureView(gzSupport.workspace,layer,layerName + "_View", whereClause)
+            view = gzSupport.makeFeatureView(gzSupport.workspace,layer,layerName + "_View", whereClause,xmlFields)
         else:
             view = layer
         count = arcpy.GetCount_management(view).getOutput(0)
