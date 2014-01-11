@@ -26,12 +26,12 @@ if targetWorkspace == "" or targetWorkspace == "#":
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getXmlElements(xmlDoc,"Dataset")
+datasets = gzSupport.getXmlElements(gzSupport.xmlFileName,"Dataset")
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
 
-settings = gzSupport.getXmlElements(xmlDoc,"AppendSettings")[0]
+settings = gzSupport.getXmlElements(gzSupport.xmlFileName,"AppendSettings")[0]
 fieldNames = gzSupport.getNodeValue(settings,"FieldNames")
 fieldNames = fieldNames.split(",")
 

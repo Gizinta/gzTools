@@ -17,11 +17,11 @@ SUCCESS = 5 # parameter number for output success value
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getXmlElements(xmlDoc,"Dataset")
+datasets = gzSupport.getXmlElements(gzSupport.xmlFileName,"Dataset")
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
-valueMaps = gzSupport.getXmlElements(xmlDoc,"ValueMap")
+valueMaps = gzSupport.getXmlElements(gzSupport.xmlFileName,"ValueMap")
 
 def main(argv = None):
     success = True

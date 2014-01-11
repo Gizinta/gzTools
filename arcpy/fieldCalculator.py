@@ -16,11 +16,11 @@ SUCCESS = 3 # parameter number for output success value
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getXmlElements(xmlDoc,"Dataset")
+datasets = gzSupport.getXmlElements(gzSupport.xmlFileName,"Dataset")
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
-valueMappings = gzSupport.getXmlElements(xmlDoc,"ValueMaps")
+valueMappings = gzSupport.getXmlElements(gzSupport.xmlFileName,"ValueMaps")
 
 def main(argv = None):
     success = True
@@ -108,7 +108,7 @@ def setFieldValues(table,fields):
         gzSupport.addMessage(msg[msg.find("Error Info:"):])
         row = None
 
-    valueMaps = gzSupport.getXmlElements(xmlDoc,"ValueMap")
+    valueMaps = gzSupport.getXmlElements(gzSupport.xmlFileName,"ValueMap")
     result = arcpy.GetCount_management(table)
     numFeat = int(result.getOutput(0))
     gzSupport.addMessage(table + ", " + str(numFeat) + " features")

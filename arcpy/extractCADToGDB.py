@@ -18,7 +18,7 @@ SUCCESS = 5 # parameter number for output success value
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getXmlElements(xmlDoc,"CADDataset")
+datasets = gzSupport.getXmlElements(gzSupport.xmlFileName,"CADDataset")
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
@@ -53,7 +53,7 @@ def main(argv = None):
                     name = dataset.getAttributeNode("name").nodeValue
 
                 gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
-                xmlFields = gzSupport.getXmlElements(xmlDoc,"Field")
+                xmlFields = gzSupport.getXmlElements(gzSupport.xmlFileName,"Field")
                 arcpy.SetProgressorLabel("Loading " + name + " for " + cadName + "...")
                 arcpy.env.Workspace = gzSupport.workspace
                 targetName = dataset.getAttributeNode("targetName").nodeValue
