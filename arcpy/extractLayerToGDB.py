@@ -17,7 +17,7 @@ SUCCESS = 4 # parameter number for output success value
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getDatasets(xmlDoc)
+datasets = gzSupport.getDatasets(gzSupport.xmlFileName)
 
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
