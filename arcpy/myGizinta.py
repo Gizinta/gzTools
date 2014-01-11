@@ -16,7 +16,6 @@
 # </Field>
 
 import sys,os,time
-namedelimiter = "_"
 
 def defaultUserName():
 	return os.getenv("USERNAME")
@@ -32,24 +31,3 @@ def getStrTime(timeVal):
 
 def getTimeFromStr(timeStr):
     return time.strptime(timeStr,"%d/%m/%Y %I:%M:%S %p")
-
-def getFacnum(dwgName):
-	facNum = dwgName[:4]
-	return facNum
-
-def getFloor(dwgName):
-    if dwgName.rfind(".dwg") > -1:
-        dwgName = dwgName[:dwgName.rfind(".dwg")]
-    floorNum = dwgName[dwgName.rfind("-")+1:]
-    return floorNum
-
-def getFacFloor(dwgName):
-    global namedelimiter
-    facFloor = getFacnum(dwgName) + namedelimiter + getFloor(dwgName)
-    return facFloor
-
-def getFacRoom(dwgName,roomfield):
-    global namedelimiter
-    facRoom = getFacFloor(dwgName) + namedelimiter + roomfield
-    return facRoom
-
