@@ -9,7 +9,6 @@ from xml.dom.minidom import Document
 
 debug = False
 log = [] # must be set by calling program with an open
-xmlFileName = os.path.join(sys.path[0],"Gizinta.xml") # this is a default setting
 startTime = time.localtime() # start time for a script
 ignoreErrors = False # default, can override in script
 loadTime = "20130101 12:00:00" # default, override in script
@@ -20,7 +19,7 @@ sourceIDField = "a" # id field name in source dataset
 sourceNameField = "b" # source file name - used to look for errors in original data
 successParameterNumber = 3 # parameter number to set at end of script to indicate success of the program
 maxErrorCount = 100 # max errors before a script will stop
-
+logFileName = "gz.log"
 
 # helper functions
 def startLog():
@@ -53,10 +52,14 @@ def closeLog():
 
 def getLogFileName(sysargv):
     # get the name of the log file to write
+    global logFileName
     fName = ""
     try:
-        fName = sysargv[:sysargv.rfind(".py")] + ".log" # make it a .log file
-        fName = fName.replace(os.sep+"arcpy"+os.sep,os.sep+"log"+os.sep) # put it in ../log folder.
+        if sysargv == "":
+            fName = logFileName # can set this if there are no params or a custom script that uses gz logging
+        else:
+            fName = sysargv[:sysargv.rfind(".py")] + ".log" # make it a .log file
+            fName = fName.replace(os.sep+"arcpy"+os.sep,os.sep+"log"+os.sep) # put it in ../log folder.
     except:
         addError("Could not get log file name from " + sysargv)
     return fName
@@ -239,17 +242,17 @@ def makeFeatureView(workspace,sourceFC,viewName,whereClause,xmlFields):
         exit(-1)
     return(viewName)
 
-def makeTableView(workspace,sourceTable,viewName,whereClause,xmlfield):
+def makeTableView(workspace,sourceTable,viewName,whereClause,xmlField):
     # make a table view using the where clause
     if arcpy.Exists(sourceTable):
         if arcpy.Exists(viewName):
             arcpy.Delete_management(viewName) # delete view if it exists
         desc = arcpy.Describe(sourceTable)
         fields = arcpy.ListFields(sourceTable)
-        fStr = getViewString(fields,xmlFields)
+        fStr = getViewString(fields,xmlField)
         arcpy.MakeTableView_management(sourceTable, viewName , whereClause, workspace, fStr)
     else:
-        addError(sourceFC + " does not exist, exiting")
+        addError(sourceTable + " does not exist, exiting")
 
     if not arcpy.Exists(viewName):
         exit(-1)
@@ -331,6 +334,7 @@ def deleteRows(workspace,fClassName,expr):
 
 def appendRows(sourceTable,targetTable,expr):
     # append rows in feature class with a where clause
+    workspace = sourceTable[:sourceTable.rfind("\\")]
     arcpy.env.Workspace = workspace
     if debug:
         addMessageLocal(tableName)
@@ -338,7 +342,8 @@ def appendRows(sourceTable,targetTable,expr):
     targTable = targetTable[targetTable.rfind("\\")+1:]
     sTable = sourceTable[sourceTable.rfind("\\")+1:]
     viewName = sTable + "_View"
-    viewName = makeFeatureView(workspace,sourceTable,viewName,expr,[])
+    desc = arcpy.Describe(targetTable)
+    viewName = makeView(desc.dataElementType,workspace,sourceTable,viewName,expr,[])
     arcpy.Append_management(viewName,targetTable,"NO_TEST")
     addMessageLocal(targTable + " rows Appended ")
     retcode = True
@@ -819,16 +824,17 @@ def getRootElement(xmlDoc):
         retDoc = xmlDoc.getElementsByTagName("GizintaPlaylist")[0]
     return retDoc
 
-def getXmlElements(xmlDoc,elemName):
+def getXmlElements(xmlFile,elemName):
     # get Xml elements from a file or files in a playlist
     retDoc = None
+    xmlDoc = xml.dom.minidom.parse(xmlFile)
     if isGizintaDocument(xmlDoc):
         retDoc = xmlDoc.getElementsByTagName(elemName)
     elif isPlaylistDocument(xmlDoc):
         docs = xmlDoc.getElementsByTagName("File")
         for doc in docs:
             fileName = collect_text(doc)
-            folder = xmlFileName[:xmlFileName.rfind(os.sep)]
+            folder = xmlFile[:xmlFile.rfind(os.sep)]
             theFile = os.path.join(folder,fileName)
             if os.path.exists(theFile):
                 xmlDoc2 = xml.dom.minidom.parse(theFile)
