@@ -20,7 +20,7 @@ if gzSupport.xmlFileName == "#" or gzSupport.xmlFileName == "":
     gzSupport.xmlFileName = None
 else:
     xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-    datasets = gzSupport.getXmlElements(xmlDoc,"Dataset")
+    datasets = gzSupport.getXmlElements(gzSupport.xmlFileName,"Dataset")
     rootElem = gzSupport.getRootElement(xmlDoc)
     gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
     gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
@@ -67,15 +67,20 @@ def main(argv = None):
 def doTruncate(target):
     # perform the append from a source table to a target table
     success = False
-    if arcpy.Exists(target):
-        gzSupport.addMessage("Deleting rows in " + target)
-        arcpy.DeleteRows_management(target)
-        success = True
-        if debug:
-            gzSupport.addMessage("Deleted")
-    else:
-        gzSupport.addMessage("Target: " + target + " does not exist")
-    gzSupport.cleanupGarbage()
+    try:
+        if arcpy.Exists(target):
+            gzSupport.addMessage("Deleting rows in " + target)
+            arcpy.DeleteRows_management(target)
+            success = True
+            if debug:
+                gzSupport.addMessage("Deleted")
+        else:
+            gzSupport.addMessage("Target: " + target + " does not exist")
+        gzSupport.cleanupGarbage()
+    except:
+        gzSupport.addMessage("Unable to delete rows for: " + target )
+        # assume this is a view or something that can't be deleted if only some things are not deleted.
+        
     return success
 
 
