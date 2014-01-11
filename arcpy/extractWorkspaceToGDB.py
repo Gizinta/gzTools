@@ -17,7 +17,7 @@ SUCCESS = 4 # parameter number for output success value
 
 gzSupport.startLog()
 xmlDoc = xml.dom.minidom.parse(gzSupport.xmlFileName)
-datasets = gzSupport.getXmlElements(xmlDoc,"GDBDataset")
+datasets = gzSupport.getXmlElements(gzSupport.xmlFileName,"GDBDataset")
 rootElem = gzSupport.getRootElement(xmlDoc)
 gzSupport.logTableName = rootElem.getAttributeNode("logTableName").nodeValue
 gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
@@ -39,7 +39,7 @@ def main(argv = None):
             gzSupport.sourceIDField = dataset.getAttributeNode("sourceIDField").nodeValue
             sourceName = dataset.getAttributeNode("sourceName").nodeValue
             targetName = dataset.getAttributeNode("targetName").nodeValue
-            xmlFields = gzSupport.getXmlElements(xmlDoc,"Field")
+            xmlFields = gzSupport.getXmlElements(gzSupport.xmlFileName,"Field")
             arcpy.SetProgressorLabel("Loading " + sourceName + " to " + targetName +"...")
             if not arcpy.Exists(os.path.join(sourceWorkspace,sourceName)):
                 gzSupport.addError(os.path.join(sourceWorkspace,sourceName + " does not exist, exiting"))
