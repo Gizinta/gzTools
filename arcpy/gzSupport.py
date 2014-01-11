@@ -140,11 +140,11 @@ def showTraceback():
     # print messages for use in Python/PythonWin
     addError(pymsg)
 
-def getDatasets(xmlDoc):
+def getDatasets(xmlFile):
     # get the list of datasets from XML doc
     dsTypes = ["MapLayer","CADDataset","GDBDataset","Dataset"]
     for atype in dsTypes:
-        datasets = getXmlElements(xmlDoc,atype)
+        datasets = getXmlElements(xmlFile,atype)
         if datasets != []:
             return datasets
 
