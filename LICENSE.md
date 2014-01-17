@@ -24,3 +24,7 @@ Your fair dealing or fair use rights, or other applicable copyright exceptions a
 - Notice — For any reuse or distribution, you must make clear to others the license terms of this work. The best way to do this is with a link to the web page listed above.
 
 Commercial variations to this license can be arranged, please contact support@gizinta.com for more information. We want you to collaborate with us and share the results of your work; we don't want you to make a few changes to this code, re-brand it, and then charge money for the result without significant value-add from your own product offering.
+
+Vertex3 and Gizinta are are providing this code "as is". 
+Vertex3 Inc. does not provide any warranty of the item whatsoever, whether express, implied, or statutory, including, but not limited to, any warranty of merchantability or fitness for a particular purpose or any warranty that the contents will be error-free.
+In no respect shall Vertex3 Inc. incur any liability for any damages, including, but limited to, direct, indirect, special, or consequential damages arising out of, resulting from, or any way connected to the use of the tools. 
