@@ -6,5 +6,5 @@ Geodatabase feature classes, tables, map layers, and CAD drawings are all suppor
 
 Check us out at http://gizinta.com
 
-Works on ArcGIS 10.0 Service Pack 5 and higher. ArcGIS Standard or higher license is required.
+Works on ArcGIS 10.1. ArcGIS Standard or higher license is required.
 
