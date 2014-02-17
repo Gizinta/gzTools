@@ -55,7 +55,7 @@ def main(argv = None):
         arcpy.SetProgressor("Step","Appending rows...",0,len(sFullNames),1)
         for name in sNames:
             arcpy.SetProgressorPosition(s)
-            arcpy.SetProgressorLabel(" Deleting rows in " + name + "...")
+            arcpy.SetProgressorLabel(" Appending rows in " + name + "...")
             # for each source name
             if debug:
                 gzSupport.addMessage(name)
