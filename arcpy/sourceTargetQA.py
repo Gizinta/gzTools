@@ -131,14 +131,14 @@ def checkGeometry(table):
     return count
 
 def runFieldCheck(dataset,table,field,sourceQA,targetQA):
-    sourceName = gzSupport.getNodeValue(field,"SourceName")
-    targetName = gzSupport.getNodeValue(field,"TargetName")
     success = True
     if sourceQA == True:
+        sourceName = gzSupport.getNodeValue(field,"SourceName")
         retVal = runOneFieldCheck(dataset,table,field,"SourceName")
         if retVal == False:
             success = False
     if targetQA == True:
+        targetName = gzSupport.getNodeValue(field,"TargetName")
         retVal = runOneFieldCheck(dataset,table,field,"TargetName")
         if retVal == False:
             success = False
