@@ -68,7 +68,7 @@ def main(argv = None):
             arcpy.RefreshCatalog(table)
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     if success == False:
-        gzSupport.addError("Errors occurred during process, look in log files for more information")
+        gzSupport.addError("Errors occurred during process, look in log file tools\\log\\fieldCalculator.log for more information")
     if gzSupport.ignoreErrors == True:
         success = True
     arcpy.SetParameter(SUCCESS, success)
