@@ -36,17 +36,19 @@ def main(argv = None):
     success = True
     gzSupport.workspace = sourceGDB
     try:
-        names = gzSupport.listDatasets(sourceGDB)
-        tNames = names[0]
-        tFullNames = names[1]
-        arcpy.SetProgressor("Step","Deleting rows...",0,len(tFullNames),1)
+        if len(datasetNames) == 0:
+            names = gzSupport.listDatasets(sourceGDB)
+            tNames = names[0]
+        else:
+            tNames = datasetNames
+        arcpy.SetProgressor("Step","Deleting rows...",0,len(tNames),1)
         i = 0
-        for name in tFullNames:
+        for name in tNames:
             arcpy.SetProgressorPosition(i)
             arcpy.SetProgressorLabel(" Deleting rows in " + name + "...")
             # for each full name
             if len(datasetNames) == 0 or gzSupport.nameTrimmer(name.upper()) in datasetNames:
-                retVal = doTruncate(name)
+                retVal = doTruncate(os.path.join(sourceGDB,name))
                 gzSupport.logDatasetProcess(name,"deleteRowsGDB",retVal)
                 if retVal == False:
                     success = False

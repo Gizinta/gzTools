@@ -44,12 +44,15 @@ def main(argv = None):
     # main function - list the source and target datasets, then delete rows/append where there is a match on non-prefixed name
     success = True
     try:
-        sources = gzSupport.listDatasets(sourceGDB)
-        sNames = sources[0]
-        sFullNames = sources[1]
-        targets = gzSupport.listDatasets(targetGDB)
-        tNames = targets[0]
-        tFullNames = targets[1]
+        if len(datasetNames) == 0:
+            sources = gzSupport.listDatasets(sourceGDB)
+            sNames = sources[0]
+            sFullNames = sources[1]
+            targets = gzSupport.listDatasets(targetGDB)
+            tNames = targets[0]
+            tFullNames = targets[1]
+        else:
+            sNames = datasetNames
         s = 0
         arcpy.SetProgressor("Step","Replacing rows...",0,len(sFullNames),1)
         for name in sNames:
@@ -58,16 +61,11 @@ def main(argv = None):
             # for each source name
             if debug:
                 gzSupport.addMessage(name)
-            try:
-                # look for the matching name in target names
-                t = tNames.index(name)
-            except:
-                # will get here if no match
-                t = -1
-            if t > -1:
+            target = os.path.join(targetGDB,name)
+            if arcpy.Exists(target):
                 # append if there is a match
                 if len(datasetNames) == 0 or gzSupport.nameTrimmer(name) in datasetNames:
-                    retVal = doInlineAppend(sFullNames[s],tFullNames[t])
+                    retVal = doInlineAppend(os.path.join(sourceGDB,name),target)
                     gzSupport.logDatasetProcess(name,"replaceRows",retVal)
                     if retVal == False:
                         success = False

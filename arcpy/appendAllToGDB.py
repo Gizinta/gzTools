@@ -45,30 +45,29 @@ def main(argv = None):
     success = True
     arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     try:
-        sources = gzSupport.listDatasets(sourceGDB)
-        sNames = sources[0]
-        sFullNames = sources[1]
-        targets = gzSupport.listDatasets(targetGDB)
-        tNames = targets[0]
-        tFullNames = targets[1]
+        if len(datasetNames) == 0:
+            sources = gzSupport.listDatasets(sourceGDB)
+            sNames = sources[0]
+            sFullNames = sources[1]
+            targets = gzSupport.listDatasets(targetGDB)
+            tNames = targets[0]
+            tFullNames = targets[1]
+        else:
+            sNames = datasetNames
+        
         s = 0
-        arcpy.SetProgressor("Step","Appending rows...",0,len(sFullNames),1)
+        arcpy.SetProgressor("Step","Appending rows...",0,len(sNames),1)
         for name in sNames:
             arcpy.SetProgressorPosition(s)
             arcpy.SetProgressorLabel(" Appending rows in " + name + "...")
             # for each source name
             if debug:
                 gzSupport.addMessage(name)
-            try:
-                # look for the matching name in target names
-                t = tNames.index(name)
-            except:
-                # will get here if no match
-                t = -1
-            if t > -1:
+            target = os.path.join(targetGDB,name)
+            if arcpy.Exists(target):
                 # append if there is a match
                 if len(datasetNames) == 0 or gzSupport.nameTrimmer(name) in datasetNames:
-                    retVal = doAppend(sFullNames[s],tFullNames[t])
+                    retVal = doAppend(os.path.join(sourceGDB,name),target)
                     gzSupport.logDatasetProcess(name,"appendAlltoGDB",retVal)
                     if retVal == False:
                         success = False
