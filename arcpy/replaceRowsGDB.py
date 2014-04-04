@@ -54,7 +54,7 @@ def main(argv = None):
         else:
             sNames = datasetNames
         s = 0
-        arcpy.SetProgressor("Step","Replacing rows...",0,len(sFullNames),1)
+        arcpy.SetProgressor("Step","Replacing rows...",0,len(sNames),1)
         for name in sNames:
             arcpy.SetProgressorPosition(s)
             arcpy.SetProgressorLabel(" Replacing rows using " + name + "...")
