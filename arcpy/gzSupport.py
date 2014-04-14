@@ -977,4 +977,5 @@ def getFileList(inputFolder,fileExt,minTime): # get a list of files - recursivel
         elif os.path.isdir(ffile):
             newFiles = getFileList(ffile,fileExt,minTime)
             inputFiles = newFiles + inputFiles
+    inputFiles = sorted(inputFiles)
     return(inputFiles)
