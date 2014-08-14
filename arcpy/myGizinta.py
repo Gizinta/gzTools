@@ -18,7 +18,17 @@
 import sys,os,time
 
 def defaultUserName():
-	return os.getenv("USERNAME")
+    return os.getenv("USERNAME")
+    #return "V3DataLoad"
+
+def dateFromYear(yearVal):
+    dateSuffix = "-06-01 12:00:00"
+    if yearVal != None:
+        if int(yearVal) < 100:
+            yearVal = "19" + str(yearVal) + dateSuffix # assume 2 char year is from 1900s...
+        else:
+            yearVal = str(yearVal) + dateSuffix
+    return yearVal
 
 def timer(input):
     return time.time() - input
