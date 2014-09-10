@@ -51,6 +51,7 @@ def main(argv = None):
             for field in fields:
                 sourceQA = False
                 targetQA = False
+                fieldName = gzSupport.getNodeValue(field,"TargetName")
                 if sourceFieldQA.lower() == "true" and qaRulesDataset.find("CheckFields") > -1:
                     sourceQA = True
                     fieldName = gzSupport.getNodeValue(field,"SourceName")
@@ -60,7 +61,10 @@ def main(argv = None):
                 retVal = runFieldCheck(dataset,table,field,sourceQA,targetQA)
                 if retVal == False:
                     success = False
-                gzSupport.logDatasetProcess(name,fieldName,retVal)
+                try:
+                    gzSupport.logDatasetProcess(name,fieldName,retVal)
+                except:
+                    gzSupport.addMessage("Process not logged for field")
             arcpy.SetProgressorPosition()
         except:
             gzSupport.showTraceback()
