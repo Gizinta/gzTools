@@ -43,6 +43,7 @@ gzSupport.startLog()
 def main(argv = None):
     # main function - list the source and target datasets, then delete rows/append where there is a match on non-prefixed name
     success = True
+    name = ''
     try:
         if len(datasetNames) == 0:
             sources = gzSupport.listDatasets(sourceGDB)
@@ -66,7 +67,7 @@ def main(argv = None):
                 # append if there is a match
                 if len(datasetNames) == 0 or gzSupport.nameTrimmer(name) in datasetNames:
                     retVal = doInlineAppend(os.path.join(sourceGDB,name),target)
-                    gzSupport.logDatasetProcess(name,"replaceRows",retVal)
+                    gzSupport.logDatasetProcess("replaceRows",name,retVal)
                     if retVal == False:
                         success = False
                     gzSupport.cleanupGarbage()
@@ -75,9 +76,9 @@ def main(argv = None):
             s = s + 1
     except:
         gzSupport.showTraceback()
-        arcpy.AddError(pymsg)
+        arcpy.AddError("Unable to update datasets")
         success = False
-        gzSupport.logDatasetProcess(name,"replaceRows",success)
+        gzSupport.logDatasetProcess("replaceRows",name,success)
 
     finally:
         arcpy.ResetProgressor()

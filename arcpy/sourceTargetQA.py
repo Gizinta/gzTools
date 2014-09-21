@@ -40,6 +40,7 @@ def main(argv = None):
         table = gzSupport.getFullName(name,tNames, tFullNames)
         #table = os.path.join(gzSupport.workspace,name)
         fields = dataset.getElementsByTagName("Field")
+        name = ''
         try:
             # run qa for dataset
             qaRulesDataset = dataset.getAttributeNode("qa").nodeValue
@@ -70,7 +71,7 @@ def main(argv = None):
             gzSupport.showTraceback()
             gzSupport.addError("Field Check Error")
             success = False
-            gzSupport.logDatasetProcess(name,"",False)
+            gzSupport.logDatasetProcess("sourceTargetQA",name,False)
         finally:
             arcpy.ResetProgressor()
             arcpy.RefreshCatalog(table)

@@ -53,14 +53,14 @@ def main(argv = None):
                 retVal = gzSupport.addGizintaField(table,targetName,field,attrs)
                 if retVal == False:
                     success = False
-            gzSupport.logDatasetProcess(name,"addMissingFields",retVal)
+            gzSupport.logDatasetProcess("addMissingFields",name,retVal)
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
             gzSupport.cleanupGarbage()
 
         except:
             gzSupport.showTraceback()
             success = False
-            gzSupport.logDatasetProcess(name,"addMissingFields",False)
+            gzSupport.logDatasetProcess("addMissingFields",name,False)
         finally:
             arcpy.RefreshCatalog(table)
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)

@@ -34,6 +34,7 @@ gzSupport.startLog()
 def main(argv = None):
     # main function - list the datasets and delete rows
     success = True
+    name = ''
     gzSupport.workspace = sourceGDB
     try:
         if len(datasetNames) == 0:
@@ -49,7 +50,7 @@ def main(argv = None):
             # for each full name
             if len(datasetNames) == 0 or gzSupport.nameTrimmer(name.upper()) in datasetNames:
                 retVal = doTruncate(os.path.join(sourceGDB,name))
-                gzSupport.logDatasetProcess(name,"deleteRowsGDB",retVal)
+                gzSupport.logDatasetProcess("deleteRowsGDB",name,retVal)
                 if retVal == False:
                     success = False
             else:
@@ -59,7 +60,7 @@ def main(argv = None):
         gzSupport.showTraceback()
         gzSupport.addError("Failed to delete rows")
         success = False
-        gzSupport.logDatasetProcess(name,"deleteRowsGDB",success)
+        gzSupport.logDatasetProcess("deleteRowsGDB",name,success)
     finally:
         arcpy.SetParameter(SUCCESS, success)
         arcpy.ResetProgressor()

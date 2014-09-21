@@ -365,15 +365,15 @@ def logDatasetProcess(loadName,dataset,status):
         if debug:
             addMessageLocal("Inserting into " +  logTable)
 
-        insRow = insertCursor.newRow()
-        insRow.setValue("PROCNAME",procName)
-        insRow.setValue("LOADNAME",loadName)
-        insRow.setValue("DATASET",dataset)
-        insRow.setValue("COMPLETED",int(status))
-        insRow.setValue("LOADUSER",userName)
-        insRow.setValue("LOADTIME",getDBTime())
-        insRow.setValue("ACTIVEFLAG","Y")
         try:
+            insRow = insertCursor.newRow()
+            insRow.setValue("PROCNAME",procName)
+            insRow.setValue("LOADNAME",loadName)
+            insRow.setValue("DATASET",dataset)
+            insRow.setValue("COMPLETED",int(status))
+            insRow.setValue("LOADUSER",userName)
+            insRow.setValue("LOADTIME",getDBTime())
+            insRow.setValue("ACTIVEFLAG","Y")
             insertCursor.insertRow(insRow)
             addMessageLocal("Row inserted into Log table")
             retcode = True

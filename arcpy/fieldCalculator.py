@@ -29,7 +29,8 @@ def main(argv = None):
     tables = gzSupport.listDatasets(gzSupport.workspace)
     tNames = tables[0]
     tFullNames = tables[1]
-
+    name = ''
+    
     for dataset in datasets:
         arcpy.env.Workspace = gzSupport.workspace
         name = dataset.getAttributeNode("name").nodeValue
@@ -63,7 +64,7 @@ def main(argv = None):
         except:
             gzSupport.showTraceback()
             success = False
-            gzSupport.logDatasetProcess(name,"Fields",False)
+            gzSupport.logDatasetProcess("fieldCalculator",name,False)
         finally:
             arcpy.RefreshCatalog(table)
             arcpy.ClearWorkspaceCache_management(gzSupport.workspace)

@@ -25,6 +25,7 @@ gzSupport.errorTableName = rootElem.getAttributeNode("errorTableName").nodeValue
 
 def main(argv = None):
     success = True
+    name = ''
     try:
         if not arcpy.Exists(gzSupport.workspace):
             gzSupport.addMessage(gzSupport.workspace + " does not exist, attempting to create")
@@ -63,7 +64,7 @@ def main(argv = None):
         gzSupport.addError("A Fatal Error occurred")
         gzSupport.showTraceback()
         success = False
-        gzSupport.logDatasetProcess("","",False)
+        gzSupport.logDatasetProcess("extractLayerToGDB",name,False)
     finally:
         arcpy.ResetProgressor()
         arcpy.RefreshCatalog(gzSupport.workspace)

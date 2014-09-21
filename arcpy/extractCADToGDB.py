@@ -26,6 +26,7 @@ cadExt = rootElem.getAttributeNode("fileExtension").nodeValue
 
 def main(argv = None):
     success = True
+    name = ''
     if not arcpy.Exists(gzSupport.workspace):
         gzSupport.addMessage(gzSupport.workspace + " does not exist, attempting to create")
         gzSupport.createGizintaGeodatabase()
@@ -87,7 +88,7 @@ def main(argv = None):
         gzSupport.addError("A Fatal Error occurred")
         gzSupport.showTraceback()
         success = False
-        gzSupport.logDatasetProcess("","",False)
+        gzSupport.logDatasetProcess("extractCADToGDB",name,False)
     finally:
         arcpy.ResetProgressor()
         arcpy.RefreshCatalog(gzSupport.workspace)

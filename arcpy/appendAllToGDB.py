@@ -43,6 +43,7 @@ gzSupport.startLog()
 def main(argv = None):
     # main function - list the source and target datasets, then append where there is a match on non-prefixed name
     success = True
+    name = ''
     arcpy.ClearWorkspaceCache_management(gzSupport.workspace)
     try:
         if len(datasetNames) == 0:
@@ -68,7 +69,7 @@ def main(argv = None):
                 # append if there is a match
                 if len(datasetNames) == 0 or gzSupport.nameTrimmer(name) in datasetNames:
                     retVal = doAppend(os.path.join(sourceGDB,name),target)
-                    gzSupport.logDatasetProcess(name,"appendAlltoGDB",retVal)
+                    gzSupport.logDatasetProcess("appendAlltoGDB",name,retVal)
                     if retVal == False:
                         success = False
                 else:
@@ -79,7 +80,7 @@ def main(argv = None):
         gzSupport.showTraceback()
         gzSupport.addError("Unable to append datasets")
         success = False
-        gzSupport.logDatasetProcess(name,"appendAlltoGDB",success)
+        gzSupport.logDatasetProcess("appendAlltoGDB",name,success)
     finally:
         arcpy.SetParameter(SUCCESS, success)
         arcpy.ResetProgressor()

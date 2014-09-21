@@ -94,9 +94,9 @@ def main(argv = None):
                             gzSupport.deleteVersion(defaultWorkspace,versionName)
                     elif desc.workspaceType == "LocalDatabase":
                         arcpy.SetProgressorLabel("Completed Update for " + str(value))
-                    gzSupport.logDatasetProcess(targetTable,sys.argv[0],retVal)
+                    gzSupport.logDatasetProcess(sys.argv[0],targetTable,retVal)
                 else:
-                    gzSupport.logDatasetProcess(targetTable,sys.argv[0],retVal)
+                    gzSupport.logDatasetProcess(sys.argv[0],targetTable,retVal)
                 gzSupport.cleanupGarbage()
 
 
