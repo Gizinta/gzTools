@@ -148,6 +148,17 @@ def getDatasets(xmlFile):
         if datasets != []:
             return datasets
 
+def getAllDatasets(xmlFile):
+    # get the list of datasets from XML doc
+    dsTypes = ["MapLayer","CADDataset","GDBDataset","Dataset"]
+    datasets = []
+    for atype in dsTypes:
+        ds = getXmlElements(xmlFile,atype)
+        if ds != [] and ds != None:
+            datasets = datasets + ds
+    return datasets
+
+
 def collect_text(node):
     # "A function that collects text inside 'node', returning that text."
     s = ""
