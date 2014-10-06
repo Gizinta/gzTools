@@ -38,7 +38,7 @@ def OpenBrowserURL(xmlFileName):
     f = urllib.urlopen(url, params)
     fileName = f.read()
     gzSupport.addMessage(fileName )
-    if fileName.find("<Warning>") == -1 and fileName.find(">Error<") == -1:
+    if fileName.find(">Warning<") == -1 and fileName.find(">Error<") == -1:
         url = 'http://www.gizinta.com/fields/gizinta.html?target='+fileName
         webbrowser.open(url, new=2)
     else:
