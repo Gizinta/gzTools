@@ -15,7 +15,10 @@
 	# <FieldLength>50</FieldLength>
 # </Field>
 
-import sys,os,time
+import sys,os,time, arcpy
+
+proxyhttp = None # "127.0.0.1:80" # ip address and port for proxy, you can also add user/pswd like: username:password@proxy_url:port
+proxyhttps = None # same as above for any https sites - not needed for gizinta tools but your proxy setup may require it.
 
 def defaultUserName():
     return os.getenv("USERNAME")
@@ -41,3 +44,13 @@ def getStrTime(timeVal):
 
 def getTimeFromStr(timeStr):
     return time.strptime(timeStr,"%d/%m/%Y %I:%M:%S %p")
+
+def getWGS1984X(row):
+    sr = arcpy.SpatialReference(4326)
+    feat = row.getValue("Shape")
+    pnt = feat.getPart(0)  
+    feat2 = feat.projectAs(sr) #arcpy.PointGeometry(pnt,sr)
+    pnt = feat2.getPart(0)
+    return pnt.X
+
+

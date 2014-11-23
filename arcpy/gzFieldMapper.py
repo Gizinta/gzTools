@@ -5,7 +5,7 @@
 # Copyright 2012-2014 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
-import os, sys, traceback, time, xml.dom.minidom, arcpy, gzSupport, urllib, webbrowser
+import os, sys, traceback, time, xml.dom.minidom, arcpy, gzSupport, urllib, urllib2, webbrowser, myGizinta
 from xml.dom.minidom import Document
 from threading import Thread
 # Local variables...
@@ -35,7 +35,9 @@ def OpenBrowserURL(xmlFileName):
     target = dsNode.getAttributeNode("name").nodeValue
     theData = [('gizinta', xmlStrGizinta),('target', target),('automap',automap)]
     params = urllib.urlencode(theData)
-    f = urllib.urlopen(url, params)
+    setupProxy()
+        
+    f = urllib2.urlopen(url, params)
     fileName = f.read()
     gzSupport.addMessage(fileName )
     if fileName.find(">Warning<") == -1 and fileName.find(">Error<") == -1:
@@ -43,6 +45,20 @@ def OpenBrowserURL(xmlFileName):
         webbrowser.open(url, new=2)
     else:
         gzSupport.addMessage("An error occurred interacting with gizinta.com. Please check your network connection and error messages printed above")
+
+def setupProxy():
+    proxies = {}
+    if myGizinta.proxyhttp != None:
+        proxies['http'] = 'http://' + myGizinta.proxyhttp
+        os.environ['http'] = myGizinta.proxyhttp
+    if myGizinta.proxyhttps != None:
+        proxies['https'] = myGizinta.proxyhttps
+        os.environ['https'] = 'http://' + myGizinta.proxyhttps
+    if proxies != {}:
+        proxy = urllib2.ProxyHandler(proxies)
+        opener = urllib2.build_opener(proxy)
+        urllib2.install_opener(opener)    
+
 
 def getDocument(dataset):
     gzSupport.addMessage(dataset)
