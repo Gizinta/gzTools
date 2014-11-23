@@ -93,7 +93,7 @@ def writeDocument(sourceDataset,targetDataset,xmlFileName):
         # Should add a template section for value maps, maybe write domains...
 
         xmlStr = xmlDoc.toprettyxml()
-        uglyXml = xmlDoc.toprettyxml(indent='	')
+        uglyXml = xmlDoc.toprettyxml(indent='	',encoding="utf-8")
         text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
         prettyXml = text_re.sub('>\g<1></', uglyXml)
 
