@@ -27,7 +27,8 @@ gzSupport.startLog()
 
 def main(argv = None):
     # main function - list the source and target datasets, then delete rows/append where there is a match on non-prefixed name
-    arcpy.AddToolbox(os.path.join(os.path.dirname(sys.path[0]),"Gizinta.tbx"))
+    dir = os.path.dirname(os.path.dirname( os.path.realpath( __file__) ))
+    arcpy.AddToolbox(os.path.join(dir,"Gizinta.tbx"))
     success = True
     try:
 
@@ -62,6 +63,7 @@ def main(argv = None):
                 if os.path.exists(fileName):
                     os.remove(fileName)
                 try:
+                    arcpy.AddToolbox(os.path.join(dir,"Gizinta.tbx")) # on one machine we had to keep adding each time or errors about missing tools were raised.
                     arcpy.gzCreateProject_gizinta(sFullNames[s],tFullNames[t],fileName)
                     retVal = True
                     gzSupport.addMessage("Created "  + fileName)
@@ -76,7 +78,7 @@ def main(argv = None):
             t = t + 1
     except:
         gzSupport.showTraceback()
-        arcpy.AddError(pymsg)
+        arcpy.AddError("Error creating project files")
         success = False
 
     finally:
