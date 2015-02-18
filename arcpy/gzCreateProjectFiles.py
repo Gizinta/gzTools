@@ -5,7 +5,7 @@
 # Copyright 2012-2013 Vertex3 Inc
 # This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
-import os, sys, traceback, time, xml.dom.minidom, gzSupport, arcpy, re
+import os, sys, traceback, time, xml.dom.minidom, gzSupport, arcpy, gzCreateProject
 from xml.dom.minidom import Document
 
 # Local variables...
@@ -23,12 +23,12 @@ if outputFolder == None or outputFolder == "":
 if prefixStr == None:
     prefixStr = ""
 
-gzSupport.startLog()
-
 def main(argv = None):
     # main function - list the source and target datasets, then delete rows/append where there is a match on non-prefixed name
     dir = os.path.dirname(os.path.dirname( os.path.realpath( __file__) ))
-    arcpy.AddToolbox(os.path.join(dir,"Gizinta.tbx"))
+    logname = os.path.join(outputFolder,'gzCreateProjectFiles.log')
+    gzSupport.startLog()
+
     success = True
     try:
 
@@ -63,8 +63,9 @@ def main(argv = None):
                 if os.path.exists(fileName):
                     os.remove(fileName)
                 try:
-                    arcpy.AddToolbox(os.path.join(dir,"Gizinta.tbx")) # on one machine we had to keep adding each time or errors about missing tools were raised.
-                    arcpy.gzCreateProject_gizinta(sFullNames[s],tFullNames[t],fileName)
+                    #arcpy.AddToolbox(os.path.join(dir,"Gizinta.tbx")) 
+                    #arcpy.gzCreateProject_gizinta(sFullNames[s],tFullNames[t],fileName) # this doesn't always work...
+                    gzCreateProject.createGzFile(sFullNames[s],tFullNames[t],fileName)
                     retVal = True
                     gzSupport.addMessage("Created "  + fileName)
                 except:
@@ -80,13 +81,13 @@ def main(argv = None):
         gzSupport.showTraceback()
         arcpy.AddError("Error creating project files")
         success = False
-
+  
     finally:
         arcpy.ResetProgressor()
         arcpy.SetParameter(gzSupport.successParameterNumber, success)
         arcpy.env.workspace = targetGDB
         arcpy.RefreshCatalog(outputFolder)
         gzSupport.closeLog()
-    
+  
 if __name__ == "__main__":
     main()
