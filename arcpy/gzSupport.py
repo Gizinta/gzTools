@@ -8,7 +8,8 @@ import sys,os,traceback,xml.dom.minidom,time,datetime,gc,arcpy,myGizinta
 from xml.dom.minidom import Document
 
 debug = False
-log = [] # must be set by calling program with an open
+log = None # must be set by calling program with an open
+logs = [] # list of log files for nested calls in gizinta scripts
 startTime = time.localtime() # start time for a script
 ignoreErrors = False # default, can override in script
 loadTime = "20130101 12:00:00" # default, override in script
@@ -20,48 +21,67 @@ sourceNameField = "b" # source file name - used to look for errors in original d
 successParameterNumber = 3 # parameter number to set at end of script to indicate success of the program
 maxErrorCount = 100 # max errors before a script will stop
 logFileName = "gz.log"
+dirName = os.path.dirname( os.path.realpath( __file__) )
 
 # helper functions
-def startLog():
+def startLog(*args):
     # gz functions write to a log file. Use this function to open it
     gc.enable()
-    global log
+    global log, logs
+
     global startTime
     global loadTime
     startTime = timer(0)
     loadTime = getDBTime()
-    openLog()
+
+    openLog(args)
     addMessageLocal(loadTime)
     setupLogTables()
 
-def openLog():
+def openLog(*args):
     # open the log file for writing
-    global log
-    fName = getLogFileName(sys.argv[0])
-    log = open(fName, "w")
+    global log,logs
+    try: 
+        logfile = args[0][0] # get the first arg if a filename has been passed
+    except:
+        logfile = getLogFileName()
+    try: # append if the file already has been opened, otherwise write a new one
+        logs.index(logfile)
+        log = open(logfile, "a+") # if found
+    except: 
+        log = open(logfile, "w+") # if new
+    logs.append(logfile)
+    logFileName = logfile
 
-def closeLog():
+def closeLog(*args):
     # close the log file, write some messages and clean up
-    global log
+    global log,logs,logFileName
     endTime = timer(0)
     addMessageLocal(getDBTime())
     addMessageLocal("Processing time: " + ' (' + str(int(timer(startTime)/60)) + 'm ' + str(int(timer(startTime) % 60)) + 's)')
-    if log != [] and log != None:
+    if log != None:
         log.close()
+    logs.pop()
+    if len(logs) > 0:
+        logFileName = logs[len(logs)-1]       
+        log = open(logFileName, "a+") # open the last log file and append
     cleanupGarbage()
 
-def getLogFileName(sysargv):
+def getLogFileName():
     # get the name of the log file to write
-    global logFileName
+    global logFileName, dirName
     fName = ""
     try:
-        if sysargv == "":
+        if sys.argv == "" or sys.argv == None:
             fName = logFileName # can set this if there are no params or a custom script that uses gz logging
         else:
-            fName = sysargv[:sysargv.rfind(".py")] + ".log" # make it a .log file
+            fName = sys.argv[0][:sys.argv[0].rfind(".py")] + ".log" # make it a .log file
             fName = fName.replace(os.sep+"arcpy"+os.sep,os.sep+"log"+os.sep) # put it in ../log folder.
     except:
-        addError("Could not get log file name from " + sysargv)
+        #addError("Could not get log file name from " + str(sys.argv))
+        fName = os.path.join(dirName,'gz.log')
+        #print sys.argv
+    logFileName = fName
     return fName
 
 def timer(input):
@@ -121,7 +141,9 @@ def logMessage(val):
             openLog()
             log.write(str(val) + "\n")
         except:
-            arcpy.AddMessage("Unable to write to log file " + getLogFileName())
+            msg = "Unable to write to log file " + getLogFileName()
+            arcpy.AddMessage(msg)
+            print msg
 
 def strToBool(s):
     # return a boolean for values like 'true'
