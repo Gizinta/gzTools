@@ -11,7 +11,7 @@ from xml.dom.minidom import Document
 import re
 
 # Local variables...
-debug = True
+debug = False
 # Parameters
 sourceDataset = arcpy.GetParameterAsText(0) # source dataset to analyze
 targetDataset = arcpy.GetParameterAsText(1) # target dataset to analyze
@@ -20,19 +20,25 @@ xmlFileName = arcpy.GetParameterAsText(2) # file name argument
 if not xmlFileName.lower().endswith(".xml"):
     xmlFileName = xmlFileName + ".xml"
 gzSupport.successParameterNumber = 3
-gzSupport.startLog()
 xmlStr = ""
 
 def main(argv = None):
+    global sourceDataset,targetDataset,xmlFileName
+    # os.path.realpath( __file__).replace('.py','.log')
+    gzSupport.startLog()
+    createGzFile(sourceDataset,targetDataset,xmlFileName)
+    gzSupport.closeLog()
+
+def createGzFile(sourceDataset,targetDataset,xmlFileName):
+
     success = False
     xmlStrSource = writeDocument(sourceDataset,targetDataset,xmlFileName)
     if xmlStrSource != "":
         success = True
-
     arcpy.SetParameter(gzSupport.successParameterNumber, success)
     arcpy.ResetProgressor()
-    gzSupport.closeLog()
-    return
+
+    return True
 
 def writeDocument(sourceDataset,targetDataset,xmlFileName):
     desc = arcpy.Describe(sourceDataset)
